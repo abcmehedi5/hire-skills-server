@@ -1,0 +1,68 @@
+@API_URL = http://localhost:3000/pms/api/v1 
+#@API_URL = http://202.22.203.92:3000/pms/api/v1 
+#@API_URL = http://192.168.1.160:3000/api
+
+@TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjMyNzgsIkVtcElkIjoiY3dsMS1yZGMtMSIsIlVzZXJOYW1lIjoiY3dsMS1yZGMtMSIsIlVuaXROYW1lIjoiQ1dMIFVuaXQgMDEiLCJUeXBlTmFtZSI6Ildhc2hSREMiLCJDb21wYW55SWQiOjE3LCJVbml0SWQiOiI4NyIsIkZ1bGxOYW1lIjoiY3dsMS1yZGMtMSIsIkxpbmVJZCI6bnVsbCwiSXNTZXdpbmciOm51bGwsIklzV2FzaGluZyI6dHJ1ZSwiSXNGaW5pc2hpbmciOm51bGwsIlVzZXJUeXBlIjoiUkRDIiwiaWF0IjoxNjk3NzA2Njc0fQ.qVh_X_-4mUXHYtabxJo9K2kgHdZ050q5KFFmhiFlPSI
+
+###
+POST {{API_URL}}/approval/create-challan
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{TOKEN}}
+
+{
+    "user_id": 3270,
+    "challan_id": 5,
+    "challan_type": "wash",
+    "unit_id":7
+}
+
+### Approve challan
+POST {{API_URL}}/approval/approve-challan
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{TOKEN}}
+
+{
+    "challan_id":85,
+    "approver_stack": "CheckedBy",
+    "next": "ApprovedBy",
+    "challan_type": "sewing"
+}
+
+### Reject Challan
+POST {{API_URL}}/approval/reject-challan
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{TOKEN}}
+
+{
+    "challan_id":104,
+    "challan_type": "sewing",
+    "approver_stack": "ApprovedBy",
+    "remarks":"demo remarks"
+}
+
+###
+POST {{API_URL}}/approval/approve-challan-list
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{TOKEN}}
+
+{
+    "list_type": "waiting",
+    "challan_type": "wash",
+    "approver_stack": "RDC"
+}
+
+###
+POST {{API_URL}}/approval/challan-summary
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{TOKEN}}
+
+{
+    "challan_id":277,
+    "challan_type": "sewing",
+    "approver_stack":"RDC"
+}

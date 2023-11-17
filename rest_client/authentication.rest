@@ -1,0 +1,28 @@
+@API_URL = http://localhost:3000/hisanmastery/api 
+# @API_URL = http://192.168.1.160:3000/api
+
+@TOKEN = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjMyODIsIkVtcElkIjoiY3dsMS13YXNoLWNoZWNrIiwiVXNlck5hbWUiOiJjd2wxLXdhc2gtY2hlY2siLCJVbml0TmFtZSI6IkNXTCBVbml0IDAxIiwiVHlwZU5hbWUiOiJXYXNoQ2hlY2tpbmciLCJDb21wYW55SWQiOjE3LCJVbml0SWQiOiI4NyIsIkZ1bGxOYW1lIjoiY3dsMS13YXNoLWNoZWNrIiwiTGluZUlkIjpudWxsLCJJc1Nld2luZyI6bnVsbCwiSXNXYXNoaW5nIjp0cnVlLCJJc0ZpbmlzaGluZyI6bnVsbCwiVXNlclR5cGUiOiJXYXNoQ2hlY2tpbmciLCJpYXQiOjE2OTg0NzQyMzV9.Iw2E0ELftYjcb04KjSv6Hry3fMK9_h3isWJUgB1gUhM
+
+POST {{API_URL}}/v1/login 
+Content-Type: application/json 
+Accept: application/json 
+
+{
+    "email":"badshapagla@gmail.com",
+    "password":"123"
+}
+
+###
+POST {{API_URL}}/v1/register 
+Content-Type: application/json 
+Accept: application/json 
+
+{
+    "username":"badsha",
+    "password":"123",
+    "first_name":"Badsha",
+    "last_name":"Pagla",
+    "email":"badshapagla@gmail.com",
+    "phone_no":"342423423434"
+}
+
