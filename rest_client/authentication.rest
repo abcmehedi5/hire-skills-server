@@ -18,11 +18,10 @@ Content-Type: application/json
 Accept: application/json 
 
 {
-    "username":"badsha",
-    "password":"123",
-    "first_name":"Badsha",
-    "last_name":"Pagla",
-    "email":"badshapagla@gmail.com",
+    "username":"mehedi333",
+    "password":"333",
+    "first_name":"mehedi",
+    "last_name":"hassan",
+    "email":"abcmehedi@gmail.com",
     "phone_no":"342423423434"
 }
-

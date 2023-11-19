@@ -3,7 +3,7 @@ const { MESSAGE } = require("../../util/constant");
 const loginServices = require("../../services/authentication_services/login_services");
 
 const schema = Joi.object({
-  email: Joi.string().min(1).max(128).required(),
+  email: Joi.string().email().min(1).max(128).required(),
   password: Joi.string().min(1).max(20).required(),
 });
 

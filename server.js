@@ -13,7 +13,7 @@ const router = require("./routes/router");
 app.use(morgan('dev'));
 const body_parser = require("body-parser");
 const { getEndpoints, getSpaceForPrintingPath, getMethodColor } = require("./util/helper");
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 const pool = getConnectionPool();
 app.use("/storage",express.static("public"))
 app.use(body_parser.json());
