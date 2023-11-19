@@ -72,4 +72,16 @@ const getCategoryBlog = async (pool, category) => {
   }
 };
 
-module.exports = { blogServices, getBlog, getCategoryBlog };
+
+
+
+// get my blog by email 
+const getMyblog = async (req, email) => {
+  console.log(email);
+  const query = `SELECT * FROM blogs WHERE email = ?`;
+  const values = [email];
+  const result = await getData(req.pool, query, values);
+  return result;
+};
+
+module.exports = { blogServices, getBlog, getCategoryBlog, getMyblog };

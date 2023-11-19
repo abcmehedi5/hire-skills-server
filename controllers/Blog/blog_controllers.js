@@ -1,6 +1,11 @@
 const Joi = require("joi");
 const { MESSAGE } = require("../../util/constant");
-const { blogServices, getBlog, getCategoryBlog } = require("../../services/Blog/blog_service");
+const {
+  blogServices,
+  getBlog,
+  getCategoryBlog,
+  getMyblog,
+} = require("../../services/Blog/blog_service");
 
 const schema = Joi.object({
   title: Joi.string().min(1).max(128).required(),
@@ -81,4 +86,35 @@ const getBlogByCategory = async (req, res) => {
   }
 };
 
-module.exports = { controller, schema, getBlogById,getBlogByCategory };
+// get blog by user email
+const getMyblogByEmail = async (req, res) => {
+  try {
+    const email = req.query.email;
+    const blogData = await getMyblog(req, email);
+    if (blogData) {
+      return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
+        message: "Blog retrieved successfully",
+        status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+        data: blogData,
+      });
+    } else {
+      return res.status(MESSAGE.NOT_FOUND.STATUS_CODE).json({
+        message: "Blog not found",
+        status: MESSAGE.NOT_FOUND.STATUS_CODE,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(MESSAGE.SERVER_ERROR.STATUS_CODE)
+      .send(MESSAGE.SERVER_ERROR.CONTENT);
+  }
+};
+
+module.exports = {
+  controller,
+  schema,
+  getBlogById,
+  getBlogByCategory,
+  getMyblogByEmail,
+};
