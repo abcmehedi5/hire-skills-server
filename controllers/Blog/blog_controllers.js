@@ -1,6 +1,6 @@
 const Joi = require("joi");
 const { MESSAGE } = require("../../util/constant");
-const { blogServices, getBlog } = require("../../services/Blog/blog_service");
+const { blogServices, getBlog, getCategoryBlog } = require("../../services/Blog/blog_service");
 
 const schema = Joi.object({
   title: Joi.string().min(1).max(128).required(),
@@ -11,7 +11,6 @@ const schema = Joi.object({
   email: Joi.string().email().min(5).max(50).required(),
   author: Joi.string().min(1).max(128).required(),
 });
-
 
 // create blog
 const controller = async (req, res) => {
@@ -38,8 +37,7 @@ const controller = async (req, res) => {
 // get blog by id
 const getBlogById = async (req, res) => {
   try {
-    const id = req.params.id; // Assuming the blog ID is passed in the URL parameters
-    console.log({ id });
+    const id = req.params.id;
     const blogData = await getBlog(req, id);
     if (blogData) {
       return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
@@ -61,4 +59,26 @@ const getBlogById = async (req, res) => {
   }
 };
 
-module.exports = { controller, schema, getBlogById };
+// get blog by category
+const getBlogByCategory = async (req, res) => {
+  try {
+    const category = req.query.category; // Extract category from query parameters
+    console.log({ category });
+
+    // Call your service function to get blog data by category
+    const categoryBlogData = await getCategoryBlog(req.pool, category);
+
+    return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
+      message: "Blog retrieved successfully",
+      status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+      data: categoryBlogData,
+    });
+  } catch (error) {
+    console.log(error.message);
+    return res
+      .status(MESSAGE.SERVER_ERROR.STATUS_CODE)
+      .send(MESSAGE.SERVER_ERROR.CONTENT);
+  }
+};
+
+module.exports = { controller, schema, getBlogById,getBlogByCategory };
