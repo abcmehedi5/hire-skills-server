@@ -6,8 +6,8 @@ const validator = require("../../middlewares/validator_middleware");
 
 const blogRouter = express.Router();
 
-blogRouter.post(API.API_CONTEXT + API.CREATE_BLOG, validator(blogSchema), blogController);
-blogRouter.get(API.API_CONTEXT + "get-blogs/:id", getBlogById);
+blogRouter.post(API.API_CONTEXT + "blog/create", validator(blogSchema), blogController);
+blogRouter.get(API.API_CONTEXT + "blog/get-blogs/:id", getBlogById);
 
 
 

@@ -6,7 +6,7 @@ const blogServices = async (req, payload) => {
   return await createBlog(req, payload); // calling function createBlog
 };
 
-// create blog
+// create blog service
 const createBlog = async (req, payload) => {
   const { title, content, image, category, date, email, author } = payload;
   const query = `INSERT INTO blogs (title, content, image, category, date, email, author) VALUES(?,?,?,?,?,?,?)`;
@@ -18,6 +18,8 @@ const createBlog = async (req, payload) => {
   return false;
 };
 
+
+// get blog by id service
 const  getBlog = async (req, id) => {
   const query = `SELECT * FROM blogs WHERE id = ?`;
   const values = [id];
