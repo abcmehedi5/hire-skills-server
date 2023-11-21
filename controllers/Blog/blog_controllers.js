@@ -10,7 +10,7 @@ const {
 
 const schema = Joi.object({
   title: Joi.string().min(1).max(128).required(),
-  content: Joi.string().min(1).max(128).required(),
+  content: Joi.string().min(1).max(1000).required(),
   image: Joi.string().min(1).max(128).required(),
   category: Joi.string().min(1).max(128).required(),
   date: Joi.string().min(1).max(128).required(),
@@ -68,8 +68,7 @@ const getBlogById = async (req, res) => {
 // get blog by category
 const getBlogByCategory = async (req, res) => {
   try {
-    const category = req.query.category; // Extract category from query parameters
-    console.log({ category });
+    const category = req.query.category;
 
     // Call your service function to get blog data by category
     const categoryBlogData = await getCategoryBlog(req.pool, category);
