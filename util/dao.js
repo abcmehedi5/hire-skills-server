@@ -16,6 +16,7 @@ const getData = async (pool, query, values) => {
 };
 
 const executeQuery = async (pool, query, values) => {
+  console.log(values);
   try {
     const [rows, field] = await pool.query(query, values);
     return rows.affectedRows > 0;
@@ -23,6 +24,7 @@ const executeQuery = async (pool, query, values) => {
     console.log(err.message);
   }
 };
+
 
 const dbConnectionChecker = async (pool) => {
   pool.getConnection(function (err, conn) {

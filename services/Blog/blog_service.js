@@ -72,16 +72,26 @@ const getCategoryBlog = async (pool, category) => {
   }
 };
 
-
-
-
-// get my blog by email 
+// get my blog by email
 const getMyblog = async (req, email) => {
-  console.log(email);
   const query = `SELECT * FROM blogs WHERE email = ?`;
   const values = [email];
   const result = await getData(req.pool, query, values);
   return result;
 };
 
-module.exports = { blogServices, getBlog, getCategoryBlog, getMyblog };
+// delete blog by id
+const deleteBlog = async (pool, blogId) => {
+  const query = `DELETE FROM blogs WHERE id = ?`;
+  const values = [blogId];
+  const result = await executeQuery(pool, query, values);
+  return result;
+};
+
+module.exports = {
+  blogServices,
+  getBlog,
+  getCategoryBlog,
+  getMyblog,
+  deleteBlog,
+};

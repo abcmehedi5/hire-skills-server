@@ -5,6 +5,7 @@ const {
   getBlog,
   getCategoryBlog,
   getMyblog,
+  deleteBlog,
 } = require("../../services/Blog/blog_service");
 
 const schema = Joi.object({
@@ -111,10 +112,33 @@ const getMyblogByEmail = async (req, res) => {
   }
 };
 
+// delete blog by id
+const deleteBlogById = async (req, res) => {
+  try {
+    const blogId = req.params.id;
+    const deleteResult = await deleteBlog(req.pool, blogId);
+    if (deleteResult) {
+      return res.status(200).json({
+        message: "Blog deleted successfully",
+        status: 200,
+      });
+    } else {
+      return res.status(500).json({
+        message: "Blog not found!",
+        status: 500,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send(MESSAGE.SERVER_ERROR.CONTENT);
+  }
+};
+
 module.exports = {
   controller,
   schema,
   getBlogById,
   getBlogByCategory,
   getMyblogByEmail,
+  deleteBlogById,
 };
