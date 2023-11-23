@@ -4,7 +4,7 @@ const {
   getCommentsByBlog,
   addReplyToComment,
   deleteComment,
-} = require("../../../controllers/Blog/Comment/commentService");
+} = require("../../../services/Blog/Comment/commentService");
 const Joi = require("joi");
 
 const commentSchema = Joi.object({

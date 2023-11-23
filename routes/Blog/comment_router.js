@@ -8,7 +8,7 @@ const {
   removeComment,
   commentSchema,
   replySchema,
-} = require("../../services/Blog/Comment/commentController");
+} = require("../../controllers/Blog/Comment/commentController");
 
 const commentRouter = express.Router();
 
