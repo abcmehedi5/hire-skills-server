@@ -50,8 +50,22 @@ const getSingleUser = async (pool, email) => {
   return user[0];
 };
 
+// free enroll register area --------------------
+const freeEnrollRegisterService = async (pool, payload) => {
+  const { name, phoneNumber, date, email, gender, department, address } =
+    payload;
+  const query = `INSERT INTO enroll (name, phoneNumber, date, email, gender, department, address) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  const values = [name, phoneNumber, date, email, gender, department, address];
+  const insert = await executeQuery(pool, query, values);
+  if (insert) {
+    return true;
+  }
+  return false;
+};
+
 module.exports = {
   userServices,
   getUsers,
   getSingleUser,
+  freeEnrollRegisterService,
 };

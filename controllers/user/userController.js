@@ -3,6 +3,7 @@ const {
   userServices,
   getUsers,
   getSingleUser,
+  freeEnrollRegisterService
 } = require("../../services/User/userService");
 const Joi = require("joi");
 
@@ -18,6 +19,17 @@ const userSchema = Joi.object({
   birthday: Joi.date().optional().allow(""),
   gender: Joi.string().allow(""),
 });
+
+const freeEnrollSchema = Joi.object({
+  name: Joi.string().required(),
+  phoneNumber: Joi.string().min(11).max(11).required(),
+  date: Joi.string().min(1).max(128).required(),
+  email: Joi.string().email().min(5).max(50).required(),
+  gender: Joi.string().required(),
+  department: Joi.string().required(),
+  address: Joi.string().required(),
+});
+
 const createUser = async (req, res) => {
   try {
     const result = await userServices(req.pool, req.body);
@@ -76,9 +88,34 @@ const getSingleUserByEmail = async (req, res) => {
   }
 };
 
+// free enroll register area------------------------
+
+const freeEnrollRegister = async (req, res) => {
+  try {
+    const result = await freeEnrollRegisterService (req.pool, req.body);
+    if (result) {
+      return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
+        message: "enroll successfully",
+        status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+      });
+    }
+    return res.status(500).json({
+      message: "enroll failed",
+      status: MESSAGE.NOT_FOUND.STATUS_CODE,
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(MESSAGE.SERVER_ERROR.STATUS_CODE)
+      .send(MESSAGE.SERVER_ERROR.CONTENT);
+  }
+};
+
 module.exports = {
   createUser,
   getAllUsers,
   getSingleUserByEmail,
   userSchema,
+  freeEnrollRegister,
+  freeEnrollSchema,
 };
