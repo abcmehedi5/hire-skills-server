@@ -9,6 +9,7 @@ const {
   freeEnrollSchema,
   freeEnrollRegister,
   getCheckRoleByEmail,
+  getFreeEnrollUserAll,
 } = require("../../controllers/user/userController");
 
 const userRouter = express.Router();
@@ -32,6 +33,9 @@ userRouter.post(
   validator(freeEnrollSchema),
   freeEnrollRegister
 );
+
+// free enroll user route
+userRouter.get(API.API_CONTEXT + "enroll/user", getFreeEnrollUserAll);
 
 // check role by email in users table
 userRouter.get(API.API_CONTEXT + "user/role", getCheckRoleByEmail);

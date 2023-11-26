@@ -63,6 +63,13 @@ const freeEnrollRegisterService = async (pool, payload) => {
   return false;
 };
 
+//get free enroll  user data
+const getFreeEnrollUser = async (pool) => {
+  const query = `SELECT * FROM enroll`;
+  const result = await getData(pool, query);
+  return result;
+};
+
 // check admin by users--------------------
 const getCheckRole = async (pool, email) => {
   const query = `SELECT * FROM users WHERE email = ?`;
@@ -78,4 +85,5 @@ module.exports = {
   getSingleUser,
   freeEnrollRegisterService,
   getCheckRole,
+  getFreeEnrollUser
 };
