@@ -65,13 +65,19 @@ const getBlogById = async (req, res) => {
   }
 };
 
-// get blog by category
 const getBlogByCategory = async (req, res) => {
   try {
-    const category = req.query.category;
-
+    const category = req?.query?.category;
+    // pagination
+    const currentPage = req?.query?.currentPage;
+    const limit = req?.query?.limit;
     // Call your service function to get blog data by category
-    const categoryBlogData = await getCategoryBlog(req.pool, category);
+    const categoryBlogData = await getCategoryBlog(
+      req.pool,
+      category,
+      currentPage,
+      limit
+    );
 
     return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
       message: "Blog retrieved successfully",

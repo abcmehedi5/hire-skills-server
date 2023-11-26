@@ -58,7 +58,7 @@ const freeEnrollRegisterService = async (pool, payload) => {
   const values = [name, phoneNumber, date, email, gender, department, address];
   const insert = await executeQuery(pool, query, values);
   if (insert) {
-    return true;
+    return insert;
   }
   return false;
 };
