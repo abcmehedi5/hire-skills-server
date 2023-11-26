@@ -3,7 +3,8 @@ const {
   userServices,
   getUsers,
   getSingleUser,
-  freeEnrollRegisterService
+  freeEnrollRegisterService,
+  getCheckRole,
 } = require("../../services/User/userService");
 const Joi = require("joi");
 
@@ -92,11 +93,35 @@ const getSingleUserByEmail = async (req, res) => {
 
 const freeEnrollRegister = async (req, res) => {
   try {
-    const result = await freeEnrollRegisterService (req.pool, req.body);
+    const result = await freeEnrollRegisterService(req.pool, req.body);
     if (result) {
       return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
         message: "enroll successfully",
         status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+      });
+    }
+    return res.status(500).json({
+      message: "enroll failed",
+      status: MESSAGE.NOT_FOUND.STATUS_CODE,
+    });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(MESSAGE.SERVER_ERROR.STATUS_CODE)
+      .send(MESSAGE.SERVER_ERROR.CONTENT);
+  }
+};
+
+// check admin by user
+const getCheckRoleByEmail = async (req, res) => {
+  const query = req?.query?.email;
+  try {
+    const result = await getCheckRole(req.pool, query);
+    if (result) {
+      return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
+        message: "role fetch successfully",
+        status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+        data: result,
       });
     }
     return res.status(500).json({
@@ -118,4 +143,5 @@ module.exports = {
   userSchema,
   freeEnrollRegister,
   freeEnrollSchema,
+  getCheckRoleByEmail,
 };

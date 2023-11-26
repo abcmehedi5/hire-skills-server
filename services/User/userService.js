@@ -63,9 +63,19 @@ const freeEnrollRegisterService = async (pool, payload) => {
   return false;
 };
 
+// check admin by users--------------------
+const getCheckRole = async (pool, email) => {
+  const query = `SELECT * FROM users WHERE email = ?`;
+  const values = [email];
+  const result = await getData(pool, query, values);
+  const role = result[0].role;
+  return { role };
+};
+
 module.exports = {
   userServices,
   getUsers,
   getSingleUser,
   freeEnrollRegisterService,
+  getCheckRole,
 };
