@@ -1,6 +1,6 @@
 module.exports = {
   API: {
-    API_CONTEXT: "/hisanmastery/api/v1/",
+    API_CONTEXT: "/hireskills/api/v1/",
     
     LOGIN: "login",
     REGISTER: "register",
