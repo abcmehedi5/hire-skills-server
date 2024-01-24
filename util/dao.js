@@ -16,7 +16,6 @@ const getData = async (pool, query, values) => {
 };
 
 const executeQuery = async (pool, query, values) => {
-  console.log(values);
   try {
     const [rows, field] = await pool.query(query, values);
     return rows.affectedRows > 0;
@@ -27,13 +26,17 @@ const executeQuery = async (pool, query, values) => {
 
 
 const dbConnectionChecker = async (pool) => {
-  pool.getConnection(function (err, conn) {
-    console.log(conn);
-    const [rows, field] = conn.query("select 1");
+  try {
+    const conn = await pool.getConnection();
+    const [rows, fields] = await conn.query("SELECT 1");
     console.log(rows);
-    console.log("I am working");
+    console.log("Connection is working");
     pool.releaseConnection(conn);
-  });
+  } catch (err) {
+    console.error("Error checking database connection:", err.message);
+  }
 };
+
+
 
 module.exports = { getData, executeQuery, dbConnectionChecker };
