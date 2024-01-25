@@ -1,4 +1,7 @@
-const { createJobService } = require("../../services/job/job.service");
+const {
+  createJobService,
+  getJobListsService,
+} = require("../../services/job/job.service");
 const { MESSAGE } = require("../../util/constant");
 
 // post new job
@@ -24,9 +27,24 @@ const createJobController = async (req, res) => {
 };
 
 // get all job using pagination
-// const getJobLists = async ((req ,res) =>{
+const getJobListsController = async (req, res) => {
+  try {
+    const currentPage = req?.query?.currentPage;
+    const limit = req?.query?.limit;
+    const paginatedJobs = await getJobListsService(req, currentPage, limit);
 
-// })
+    return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
+      message: "jobs retrieved successfully",
+      status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+      totalItems: paginatedJobs.totalItems.totalItems,
+      totalCurrentItems: paginatedJobs.data.length,
+      data: paginatedJobs.data,
+    });
+  } catch (error) {
+    return res
+      .status(MESSAGE.SERVER_ERROR.STATUS_CODE)
+      .send(MESSAGE.SERVER_ERROR.CONTENT);
+  }
+};
 
-
-module.exports = { createJobController };
+module.exports = { createJobController, getJobListsController };

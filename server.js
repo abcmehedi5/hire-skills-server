@@ -24,7 +24,6 @@ app.use(cors());
 
 app.use((req, _, next) => {
   req.pool = pool;
-  console.log(router)
   next();
 }, router);
 

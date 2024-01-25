@@ -1,4 +1,4 @@
-const { executeQuery } = require("../../util/dao");
+const { executeQuery, getData } = require("../../util/dao");
 
 // create comment by blog
 const createJobService = async (req, payload) => {
@@ -47,4 +47,20 @@ const createJobService = async (req, payload) => {
   return false;
 };
 
-module.exports = { createJobService };
+// get all jobs by paginated and filter
+
+const getJobListsService = async (req, currentPage, limit) => {
+  const page = parseInt(currentPage) || 0;
+  const limits = parseInt(limit) || 10;
+  const skip = (page - 1) * limits;
+  //get total count of data
+  const queryTotalItem = "SELECT COUNT(*) as totalItems FROM jobs"
+  const [totalItems] = await getData(req.pool, queryTotalItem)
+  // get all jobs paginated data
+  const queryPaginatedJobs = "SELECT * FROM jobs LIMIT ? OFFSET ?";
+  const value = [limits, skip];
+  const data = await getData(req.pool, queryPaginatedJobs, value);
+  return {data, totalItems};
+};
+
+module.exports = { createJobService, getJobListsService };
