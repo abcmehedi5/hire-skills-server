@@ -31,7 +31,10 @@ const getJobListsController = async (req, res) => {
   try {
     const currentPage = req?.query?.currentPage;
     const limit = req?.query?.limit;
-    const paginatedJobs = await getJobListsService(req, currentPage, limit);
+    const jobType =req?.query?.jobType // onsite remote
+    const employmentType =req?.query?.employmentType //  full time / part time
+    const search =req?.query?.search // title, company name , tags
+    const paginatedJobs = await getJobListsService(req, currentPage, limit, jobType, employmentType, search);
 
     return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
       message: "jobs retrieved successfully",
