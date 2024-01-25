@@ -1,3 +1,4 @@
+const { countItems, getItemsPaginated } = require("../../sql_queries/sqlQuery");
 const { executeQuery, getData } = require("../../util/dao");
 
 // create comment by blog
@@ -54,10 +55,10 @@ const getJobListsService = async (req, currentPage, limit) => {
   const limits = parseInt(limit) || 10;
   const skip = (page - 1) * limits;
   //get total count of data
-  const queryTotalItem = "SELECT COUNT(*) as totalItems FROM jobs"
+  const queryTotalItem = countItems('jobs')
   const [totalItems] = await getData(req.pool, queryTotalItem)
   // get all jobs paginated data
-  const queryPaginatedJobs = "SELECT * FROM jobs LIMIT ? OFFSET ?";
+  const queryPaginatedJobs = getItemsPaginated('jobs');
   const value = [limits, skip];
   const data = await getData(req.pool, queryPaginatedJobs, value);
   return {data, totalItems};
