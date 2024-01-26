@@ -31,10 +31,21 @@ const getJobListsController = async (req, res) => {
   try {
     const currentPage = req?.query?.currentPage;
     const limit = req?.query?.limit;
-    const jobType =req?.query?.jobType // onsite remote
-    const employmentType =req?.query?.employmentType //  full time / part time
-    const search =req?.query?.search // title, company name , tags
-    const paginatedJobs = await getJobListsService(req, currentPage, limit, jobType, employmentType, search);
+    const jobType = req?.query?.jobType; // onsite remote
+    const employmentType = req?.query?.employmentType; //  full time / part time
+    // Convert comma-separated strings to arrays
+    const jobTypes = jobType ? jobType.split(",") : [];
+    const employmentTypes = employmentType ? employmentType.split(",") : [];
+
+    const search = req?.query?.search; // title, company name , tags
+    const paginatedJobs = await getJobListsService(
+      req,
+      currentPage,
+      limit,
+      jobTypes,
+      employmentTypes,
+      search
+    );
 
     return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
       message: "jobs retrieved successfully",

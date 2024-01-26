@@ -68,14 +68,13 @@ const getJobListsService = async (
   req,
   currentPage,
   limit,
-  jobType,
-  employmentType,
+  jobTypes,
+  employmentTypes,
   search
 ) => {
   const page = parseInt(currentPage) || 0;
   const limits = parseInt(limit) || 10;
   const skip = (page - 1) * limits;
-
   // Get total count of data
   const queryTotalItem = countItems("jobs");
   const [totalItems] = await getData(req.pool, queryTotalItem);
@@ -85,14 +84,27 @@ const getJobListsService = async (
 
   const conditions = [];
 
-  if (jobType) {
-    conditions.push(`jobType = '${jobType}'`);
+  // if (jobTypes) {
+  //   conditions.push(`jobType = '${jobTypes}'`);
+  // }
+
+  // if (employmentTypes) {
+  //   conditions.push(`employmentType = '${employmentTypes}'`);
+  // }
+
+  if (jobTypes.length > 0) {
+    const jobTypeCondition = jobTypes
+      .map((type) => `jobType = '${type}'`)
+      .join(" OR ");
+    conditions.push(`(${jobTypeCondition})`);
   }
 
-  if (employmentType) {
-    conditions.push(`employmentType = '${employmentType}'`);
+  if (employmentTypes && employmentTypes.length > 0) {
+    const employmentTypeCondition = employmentTypes
+      .map((type) => `employmentType = '${type}'`)
+      .join(" OR ");
+    conditions.push(`(${employmentTypeCondition})`);
   }
-
   //  search conditions
   if (search) {
     conditions.push(
@@ -106,6 +118,8 @@ const getJobListsService = async (
   }
   // peginated job query
   queryPaginatedJobs += ` LIMIT ? OFFSET ?`;
+
+
 
   // Get paginated jobs data
   const value = [limits, skip];
