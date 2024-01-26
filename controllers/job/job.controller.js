@@ -31,10 +31,11 @@ const getJobListsController = async (req, res) => {
   try {
     const currentPage = req?.query?.currentPage;
     const limit = req?.query?.limit;
-    const jobType = req?.query?.jobType; // onsite remote
+    const experienceLevel = req?.query?.experienceLevel; // expart
     const employmentType = req?.query?.employmentType; //  full time / part time
+    const jobType = req?.query?.jobType; // onsite
     // Convert comma-separated strings to arrays
-    const jobTypes = jobType ? jobType.split(",") : [];
+    const experienceLevels = experienceLevel ? experienceLevel.split(",") : [];
     const employmentTypes = employmentType ? employmentType.split(",") : [];
 
     const search = req?.query?.search; // title, company name , tags
@@ -42,8 +43,9 @@ const getJobListsController = async (req, res) => {
       req,
       currentPage,
       limit,
-      jobTypes,
+      jobType,
       employmentTypes,
+      experienceLevels,
       search
     );
 

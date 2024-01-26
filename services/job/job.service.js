@@ -68,10 +68,12 @@ const getJobListsService = async (
   req,
   currentPage,
   limit,
-  jobTypes,
+  jobType,
   employmentTypes,
+  experienceLevels,
   search
 ) => {
+  // console.log(employmentTypes , experienceLevels)
   const page = parseInt(currentPage) || 0;
   const limits = parseInt(limit) || 10;
   const skip = (page - 1) * limits;
@@ -83,20 +85,19 @@ const getJobListsService = async (
   let queryPaginatedJobs = "SELECT * FROM jobs";
 
   const conditions = [];
-
-  // if (jobTypes) {
-  //   conditions.push(`jobType = '${jobTypes}'`);
-  // }
+  if (jobType && jobType !== "All") {
+    conditions.push(`jobType = '${jobType}'`);
+  }
 
   // if (employmentTypes) {
   //   conditions.push(`employmentType = '${employmentTypes}'`);
   // }
 
-  if (jobTypes.length > 0) {
-    const jobTypeCondition = jobTypes
+  if (experienceLevels.length > 0) {
+    const experienceLevelCondition = experienceLevels
       .map((type) => `jobType = '${type}'`)
       .join(" OR ");
-    conditions.push(`(${jobTypeCondition})`);
+    conditions.push(`(${experienceLevelCondition})`);
   }
 
   if (employmentTypes && employmentTypes.length > 0) {
@@ -118,8 +119,6 @@ const getJobListsService = async (
   }
   // peginated job query
   queryPaginatedJobs += ` LIMIT ? OFFSET ?`;
-
-
 
   // Get paginated jobs data
   const value = [limits, skip];
