@@ -10,4 +10,10 @@ const getItemsPaginated = (tableName) => {
   return query;
 };
 
-module.exports = { countItems, getItemsPaginated };
+// get single data by id
+const getsingleDataQuery = (tableName) => {
+  const query = `SELECT * FROM ${tableName} WHERE id = ?`;
+  return query;
+};
+
+module.exports = { countItems, getItemsPaginated, getsingleDataQuery };

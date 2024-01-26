@@ -1,6 +1,7 @@
 const {
   createJobService,
   getJobListsService,
+  getSingleJobService,
 } = require("../../services/job/job.service");
 const { MESSAGE } = require("../../util/constant");
 
@@ -63,4 +64,25 @@ const getJobListsController = async (req, res) => {
   }
 };
 
-module.exports = { createJobController, getJobListsController };
+// get single job controller
+const getSingleJobController = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const result = await getSingleJobService(req, id);
+    return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
+      message: "single job retrived successfull",
+      status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+      data: result,
+    });
+  } catch (error) {
+    return res
+      .status(MESSAGE.SERVER_ERROR.STATUS_CODE)
+      .send(MESSAGE.SERVER_ERROR.CONTENT);
+  }
+};
+
+module.exports = {
+  createJobController,
+  getJobListsController,
+  getSingleJobController,
+};

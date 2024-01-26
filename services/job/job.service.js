@@ -1,4 +1,9 @@
-const { countItems, getItemsPaginated } = require("../../sql_queries/sqlQuery");
+const { createJobQuery } = require("../../sql_queries/jobSqlQuery");
+const {
+  countItems,
+  getItemsPaginated,
+  getsingleDataQuery,
+} = require("../../sql_queries/sqlQuery");
 const { executeQuery, getData } = require("../../util/dao");
 
 // create comment by blog
@@ -21,8 +26,7 @@ const createJobService = async (req, payload) => {
     tags,
     postDate,
   } = payload;
-  const query = `INSERT INTO jobs (title, company, experience, location, description, skills, requirements, salary, deadline, jobType, vacancy, employmentType, createdBy, contacts, tags, postDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
+  const query = createJobQuery("jobs");
   const values = [
     title,
     company,
@@ -73,7 +77,6 @@ const getJobListsService = async (
   experienceLevels,
   search
 ) => {
-  // console.log(employmentTypes , experienceLevels)
   const page = parseInt(currentPage) || 0;
   const limits = parseInt(limit) || 10;
   const skip = (page - 1) * limits;
@@ -127,4 +130,12 @@ const getJobListsService = async (
   return { data, totalItems };
 };
 
-module.exports = { createJobService, getJobListsService };
+//get single job by job id
+const getSingleJobService = async (req, id) => {
+  const query = getsingleDataQuery("jobs");
+  const value = [id];
+  const result = await getData(req.pool, query, value);
+  return result[0];
+};
+
+module.exports = { createJobService, getJobListsService, getSingleJobService };
