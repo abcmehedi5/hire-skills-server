@@ -4,6 +4,7 @@ const { getData, executeQuery } = require("../../util/dao");
 const bcrypt = require("bcrypt");
 var jwt = require("jsonwebtoken");
 const { genarateToken } = require("../../util/jwtToken");
+const sendMail = require("../../util/mailer");
 
 // create new user service
 const registerService = async (req, body) => {
@@ -86,4 +87,28 @@ const loginService = async (req, email, password) => {
   }
 };
 
-module.exports = { registerService, loginService };
+// forgot || reset password
+const forgotPasswordService = async (req, email) => {
+  const userQuery = getsingleDataQuery("users", "email");
+  const value = [email];
+  const response = await getData(req.pool, userQuery, value);
+  const user = response[0];
+  if (!user) {
+    return { message: "user not found with email" };
+  }
+
+  // genarate json web token
+  const token = await genarateToken(
+    {
+      fullName: user.fullName,
+      email: user?.email,
+    },
+    "10m"
+  );
+  const url = `${process.env.CLIENT_URL}/reset-password/${user?.email}/${token}`;
+  // // send password rest mail
+  const result = await sendMail(user.email, "Password reset", url);
+  return { message: "Password reset email has been sent on your email.", result };
+};
+
+module.exports = { registerService, loginService, forgotPasswordService };
