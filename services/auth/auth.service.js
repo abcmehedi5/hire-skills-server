@@ -1,9 +1,11 @@
-const { usrRegisterQuery } = require("../../sql_queries/authSqlQuery");
+const {
+  userRegisterQuery,
+  passwordUpdateQuery,
+} = require("../../sql_queries/authSqlQuery");
 const { getsingleDataQuery } = require("../../sql_queries/sqlQuery");
 const { getData, executeQuery } = require("../../util/dao");
 const bcrypt = require("bcrypt");
-var jwt = require("jsonwebtoken");
-const { genarateToken } = require("../../util/jwtToken");
+const { genarateToken, verifyJWT } = require("../../util/jwtToken");
 const sendMail = require("../../util/mailer");
 
 // create new user service
@@ -16,7 +18,7 @@ const registerService = async (req, body) => {
   // get single user by user name
   const userNameCheckQuery = getsingleDataQuery("users", "username");
   // register query
-  const registerQuery = usrRegisterQuery("users");
+  const registerQuery = userRegisterQuery("users");
   const emailCheckValue = [email];
   const userNameCheckValue = [username];
   const registerValue = [email, password, fullName, username];
@@ -106,9 +108,37 @@ const forgotPasswordService = async (req, email) => {
     "10m"
   );
   const url = `${process.env.CLIENT_URL}/reset-password/${user?.email}/${token}`;
-  // // send password rest mail
-  const result = await sendMail(user.email, "Password reset", url);
-  return { message: "Password reset email has been sent on your email.", result };
+  // send password rest mail
+  await sendMail(user.email, "Password reset", url);
+  return {
+    message: "Password reset email has been sent on your email.",
+    url,
+  };
 };
 
-module.exports = { registerService, loginService, forgotPasswordService };
+// set forgot new password
+const setForgotPasswordService = async (req, password, email, token) => {
+  const userQuery = getsingleDataQuery("users", "email");
+  const value = [email];
+  const response = await getData(req.pool, userQuery, value);
+  const user = response[0];
+  const isUserToken = await verifyJWT(token);
+  console.log(isUserToken);
+  if (user && isUserToken) {
+    const hashPassword = await bcrypt.hash(password, 10);
+    // Update the user's password in the database
+    const updatePasswordQuery = passwordUpdateQuery("users");
+    const updatePasswordValues = [hashPassword, email];
+    await executeQuery(req.pool, updatePasswordQuery, updatePasswordValues);
+    return { message: "Password has been changed", error: false };
+  } else {
+    return { message: "Invalid Reset Passowrd Link", error: true };
+  }
+};
+
+module.exports = {
+  registerService,
+  loginService,
+  forgotPasswordService,
+  setForgotPasswordService,
+};

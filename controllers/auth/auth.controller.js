@@ -2,6 +2,7 @@ const {
   registerService,
   loginService,
   forgotPasswordService,
+  setForgotPasswordService,
 } = require("../../services/auth/auth.service");
 const { MESSAGE } = require("../../util/constant");
 
@@ -59,10 +60,28 @@ const forgotPasswordController = async (req, res) => {
       return { message: "Invalid email address" };
     }
     const result = await forgotPasswordService(req, email);
-    console.log(result);
     return res.status(200).json({
-      message: result.message,
+      message: result?.message,
+      url:result?.url
     });
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ message: "There was a server side error please try again" });
+  }
+};
+
+// set password for forgot password
+const setForgotPasswordController = async (req, res) => {
+  try {
+    const { email, token } = req.params;
+    const password = req.body.password;
+    const result = await setForgotPasswordService(req, password, email, token);
+    if (!result.error) {
+      return res.status(200).json({ message: result.message });
+    } else {
+      return res.status(500).json({ message: result.message });
+    }
   } catch (error) {
     return res
       .status(500)
@@ -74,4 +93,5 @@ module.exports = {
   registerController,
   loginController,
   forgotPasswordController,
+  setForgotPasswordController,
 };

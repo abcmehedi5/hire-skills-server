@@ -6,4 +6,19 @@ const genarateToken = async (payload, expired) => {
   });
   return token;
 };
-module.exports = { genarateToken };
+
+const verifyJWT = async (token) => {
+  try {
+    if (token) {
+      const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+      if (decoded.email) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  } catch (error) {
+    return false
+  }
+};
+module.exports = { genarateToken, verifyJWT };
