@@ -132,7 +132,7 @@ const getJobListsService = async (
 
 //get single job by job id
 const getSingleJobService = async (req, id) => {
-  const query = getsingleDataQuery("jobs");
+  const query = getsingleDataQuery("jobs", "id");
   const value = [id];
   const result = await getData(req.pool, query, value);
   return result[0];

@@ -11,8 +11,8 @@ const getItemsPaginated = (tableName) => {
 };
 
 // get single data by id
-const getsingleDataQuery = (tableName) => {
-  const query = `SELECT * FROM ${tableName} WHERE id = ?`;
+const getsingleDataQuery = (tableName, value) => {
+  const query = `SELECT * FROM ${tableName} WHERE ${value} = ?`;
   return query;
 };
 
