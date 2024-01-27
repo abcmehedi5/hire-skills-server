@@ -2,10 +2,13 @@ const { usrRegisterQuery } = require("../../sql_queries/authSqlQuery");
 const { getsingleDataQuery } = require("../../sql_queries/sqlQuery");
 const { getData, executeQuery } = require("../../util/dao");
 const bcrypt = require("bcrypt");
+
+// create new user service
 const registerService = async (req, body) => {
   const { email, password: pass, fullName, username } = body;
   // hash password
   const password = await bcrypt.hash(pass, 10);
+  console.log(password)
   // get single user by email
   const userCheckQuery = getsingleDataQuery("users", "email");
   // get single user by user name
@@ -36,4 +39,27 @@ const registerService = async (req, body) => {
   };
 };
 
-module.exports = { registerService };
+
+// login user 
+const loginService = async (req, email, password) => {
+
+  const userCheckQuery = getsingleDataQuery("users", "email");
+  const emailCheckValue = [email];
+  const getCheckEmail = await getData(req.pool, userCheckQuery, emailCheckValue);
+
+  if (getCheckEmail.length === 0) {
+    return { message: "Account not found", login: false };
+  }
+  const storedHashedPassword = getCheckEmail[0].password;
+
+  // Load hash from your password DB.
+  const isPasswordCorrect = await bcrypt.compare(password, storedHashedPassword);
+  if (!isPasswordCorrect) {
+    return { message: "Invalid Password", login: false };
+  }
+
+  return { message: "Login Successful", login: true };
+};
+
+
+module.exports = { registerService, loginService };
