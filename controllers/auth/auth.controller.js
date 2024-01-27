@@ -12,7 +12,6 @@ const registerController = async (req, res) => {
       return res.status(200).json({
         message: "Register Successfull",
         status: MESSAGE.SUCCESS_GET.STATUS_CODE,
-        data: result,
       });
     } else if (!result?.register) {
       return res.status(400).json({
@@ -36,7 +35,7 @@ const loginController = async (req, res) => {
       return res.status(200).json({
         message: result.message,
         status: MESSAGE.SUCCESS_GET.STATUS_CODE,
-        data: result,
+        token: result.token,
       });
     } else if (!result?.login) {
       return res.status(400).json({
