@@ -3,6 +3,7 @@ const {
   countItems,
   getItemsPaginated,
   getsingleDataQuery,
+  getPropertyQuery,
 } = require("../../sql_queries/sqlQuery");
 const { executeQuery, getData } = require("../../util/dao");
 
@@ -138,4 +139,16 @@ const getSingleJobService = async (req, id) => {
   return result[0];
 };
 
-module.exports = { createJobService, getJobListsService, getSingleJobService };
+// get job title for job search suggestion
+const getJobAllJobTitle = async (req, res) => {
+  const query = getPropertyQuery("title, tags", "jobs");
+  const result = await getData(req.pool, query);
+  return result;
+};
+
+module.exports = {
+  createJobService,
+  getJobListsService,
+  getSingleJobService,
+  getJobAllJobTitle,
+};

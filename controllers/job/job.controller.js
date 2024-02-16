@@ -2,6 +2,7 @@ const {
   createJobService,
   getJobListsService,
   getSingleJobService,
+  getJobAllJobTitle,
 } = require("../../services/job/job.service");
 const { MESSAGE } = require("../../util/constant");
 
@@ -81,8 +82,23 @@ const getSingleJobController = async (req, res) => {
   }
 };
 
+const getJobAllJobTitleController = async (req, res) => {
+  try {
+    const result = await getJobAllJobTitle(req,res);
+    return res.status(200).json({
+      message: "title retrived successfull",
+      data: result,
+    });
+  } catch (error) {
+    return res
+      .status(MESSAGE.SERVER_ERROR.STATUS_CODE)
+      .send(MESSAGE.SERVER_ERROR.CONTENT);
+  }
+};
+
 module.exports = {
   createJobController,
   getJobListsController,
   getSingleJobController,
+  getJobAllJobTitleController,
 };

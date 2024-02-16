@@ -16,4 +16,14 @@ const getsingleDataQuery = (tableName, value) => {
   return query;
 };
 
-module.exports = { countItems, getItemsPaginated, getsingleDataQuery };
+// get property data
+const getPropertyQuery = (property, table) => {
+  return (query = `SELECT ${property}  FROM ${table}`); //ex: title, description......
+};
+
+module.exports = {
+  countItems,
+  getItemsPaginated,
+  getsingleDataQuery,
+  getPropertyQuery,
+};
