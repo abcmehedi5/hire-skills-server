@@ -3,6 +3,7 @@ const {
   loginService,
   forgotPasswordService,
   setForgotPasswordService,
+  refreshAccessTokenService,
 } = require("../../services/auth/auth.service");
 const { MESSAGE } = require("../../util/constant");
 
@@ -33,12 +34,26 @@ const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
     const result = await loginService(req, email, password);
+    console.log(result);
     if (result?.login) {
-      return res.status(200).json({
-        message: result.message,
-        status: MESSAGE.SUCCESS_GET.STATUS_CODE,
-        token: result.token,
-      });
+      return res
+        .status(200)
+        .cookie("accessToken", result.accessToken, {
+          httpOnly: true,
+          sameSite: "none",
+          maxAge: 5 * 60 * 1000, // 5 min
+        })
+        .cookie("refreshToken", result.refreshToken, {
+          httpOnly: true,
+          sameSite: "none",
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        })
+        .json({
+          message: result.message,
+          status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+          refreshToken: result.refreshToken,
+          accessToken: result.accessToken,
+        });
     } else if (!result?.login) {
       return res.status(400).json({
         message: result.message,
@@ -52,6 +67,23 @@ const loginController = async (req, res) => {
   }
 };
 
+// refresh access token controller
+const refreshAccessTokenController = async (req, res) => {
+  try {
+    const response = await refreshAccessTokenService(req, res);
+    if (response) {
+      return res.status(200).cookie("accessToken", response.accessToken).json({
+        message: response.message,
+        status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+        refreshToken: response.refreshToken,
+        accessToken: response.accessToken,
+      });
+    }
+  } catch (error) {
+    return res.status(500).send({ message: "access token not created" });
+  }
+};
+
 // forgot password or reset
 const forgotPasswordController = async (req, res) => {
   try {
@@ -62,7 +94,7 @@ const forgotPasswordController = async (req, res) => {
     const result = await forgotPasswordService(req, email);
     return res.status(200).json({
       message: result?.message,
-      url:result?.url
+      url: result?.url,
     });
   } catch (error) {
     return res
@@ -92,6 +124,7 @@ const setForgotPasswordController = async (req, res) => {
 module.exports = {
   registerController,
   loginController,
+  refreshAccessTokenController,
   forgotPasswordController,
   setForgotPasswordController,
 };

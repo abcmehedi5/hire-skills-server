@@ -5,7 +5,11 @@ const {
 const { getsingleDataQuery } = require("../../sql_queries/sqlQuery");
 const { getData, executeQuery } = require("../../util/dao");
 const bcrypt = require("bcrypt");
-const { genarateToken, verifyJWT } = require("../../util/jwtToken");
+const {
+  genarateToken,
+  verifyJWT,
+  generateAccessAndRefereshTokens,
+} = require("../../util/jwtToken");
 const sendMail = require("../../util/mailer");
 
 // create new user service
@@ -60,7 +64,6 @@ const loginService = async (req, email, password) => {
     userCheckQuery,
     emailCheckValue
   );
-
   if (getCheckEmail.length === 0) {
     return { message: "Account not found", login: false };
   }
@@ -77,16 +80,39 @@ const loginService = async (req, email, password) => {
 
   if (isPasswordCorrect && getCheckEmail.length !== 0) {
     const user = getCheckEmail[0];
-    // generate json web token
-    const token = await genarateToken(
-      {
-        fullName: user.fullName,
-        email: user?.email,
-      },
-      "10d"
+    // generate access and refresh toekn
+    const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
+      req.pool,
+      user.email
     );
-    return { message: "Login Successful", login: true, token: token };
+
+    return {
+      message: "Login Successful",
+      login: true,
+      refreshToken: refreshToken,
+      accessToken: accessToken,
+    };
   }
+};
+
+// refresh access token
+const refreshAccessTokenService = async (req, res) => {
+  const oldRefreshToken = req.cookies.refreshToken;
+  // vrify old refresh token
+  const { fullName, email } = await verifyJWT(
+    oldRefreshToken,
+    process.env.JWT_REFRESH_KEY
+  ); // return true || false
+  if (!email) {
+    throw createError(401, "invalid refresh token. please logain again");
+  }
+
+  // generate new access token
+  const newAccessToken = await genarateToken({ fullName, email }, "5m");
+  return {
+    accessToken: newAccessToken,
+    message: "new access token is generated",
+  };
 };
 
 // forgot || reset password
@@ -139,6 +165,7 @@ const setForgotPasswordService = async (req, password, email, token) => {
 module.exports = {
   registerService,
   loginService,
+  refreshAccessTokenService,
   forgotPasswordService,
   setForgotPasswordService,
 };

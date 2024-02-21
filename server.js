@@ -2,6 +2,7 @@
 require("dotenv").config();
 const ip = require("ip");
 const express = require("express");
+const cookieParser = require('cookie-parser');
 const cors = require("cors");
 const morgan = require("morgan");
 const chalk = require("chalk");
@@ -21,6 +22,7 @@ const pool = getConnectionPool();
 app.use("/storage", express.static("public"));
 app.use(body_parser.json());
 app.use(cors());
+app.use(cookieParser());
 
 app.use((req, _, next) => {
   req.pool = pool;
