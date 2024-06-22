@@ -162,10 +162,19 @@ const setForgotPasswordService = async (req, password, email, token) => {
   }
 };
 
+// is loggedin user
+const getSingleUser = async (req, email) => {
+  const userQuery = getsingleDataQuery("users", "email");
+  const value = [email];
+  const response = await getData(req.pool, userQuery, value);
+  return response;
+};
+
 module.exports = {
   registerService,
   loginService,
   refreshAccessTokenService,
   forgotPasswordService,
   setForgotPasswordService,
+  getSingleUser,
 };
