@@ -8,8 +8,9 @@ const { MESSAGE } = require("../../util/constant");
 
 // post new job
 const createJobController = async (req, res) => {
+  const payload = req.body;
   try {
-    const result = await createJobService(req, req.body);
+    const result = await createJobService(req, payload);
     if (result) {
       return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
         message: "Job Posted Successfully",
@@ -84,7 +85,7 @@ const getSingleJobController = async (req, res) => {
 
 const getJobAllJobTitleController = async (req, res) => {
   try {
-    const result = await getJobAllJobTitle(req,res);
+    const result = await getJobAllJobTitle(req, res);
     return res.status(200).json({
       message: "title retrived successfull",
       data: result,

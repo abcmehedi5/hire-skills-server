@@ -19,7 +19,7 @@ const router = require("./routes/router");
 
 // Mongoose configuration 
 const mongoURI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/yourDatabaseName";
+  process.env.MONGODB_URI || "mongodb://localhost:27017/hire-skill";
 mongoose
   .connect(mongoURI, {
     useNewUrlParser: true,

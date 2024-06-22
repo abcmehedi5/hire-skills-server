@@ -1,3 +1,4 @@
+const { JobModel } = require("../../models/job-model/job.model");
 const { createJobQuery } = require("../../sql_queries/jobSqlQuery");
 const {
   countItems,
@@ -9,46 +10,49 @@ const { executeQuery, getData } = require("../../util/dao");
 
 // create comment by blog
 const createJobService = async (req, payload) => {
-  const {
-    title,
-    company,
-    experience,
-    location,
-    description,
-    skills,
-    requirements,
-    salary,
-    deadline,
-    jobType,
-    vacancy,
-    employmentType,
-    createdBy,
-    contacts,
-    tags,
-    postDate,
-  } = payload;
-  const query = createJobQuery("jobs");
-  const values = [
-    title,
-    company,
-    experience,
-    location,
-    description,
-    JSON.stringify(skills),
-    JSON.stringify(requirements),
-    salary,
-    deadline,
-    jobType,
-    vacancy,
-    employmentType,
-    JSON.stringify(createdBy),
-    JSON.stringify(contacts),
-    JSON.stringify(tags),
-    postDate,
-  ];
-  const insert = await executeQuery(req.pool, query, values);
-  if (insert) {
-    return true;
+  // const {
+  //   title,
+  //   company,
+  //   experience,
+  //   location,
+  //   description,
+  //   skills,
+  //   requirements,
+  //   salary,
+  //   deadline,
+  //   jobType,
+  //   vacancy,
+  //   employmentType,
+  //   createdBy,
+  //   contacts,
+  //   tags,
+  //   postDate,
+  // } = payload;
+  // const query = createJobQuery("jobs");
+  // const values = [
+  //   title,
+  //   company,
+  //   experience,
+  //   location,
+  //   description,
+  //   JSON.stringify(skills),
+  //   JSON.stringify(requirements),
+  //   salary,
+  //   deadline,
+  //   jobType,
+  //   vacancy,
+  //   employmentType,
+  //   JSON.stringify(createdBy),
+  //   JSON.stringify(contacts),
+  //   JSON.stringify(tags),
+  //   postDate,
+  // ];
+
+  // save to the database
+  const response = JobModel.create(payload);
+  // const insert = await executeQuery(req.pool, query, values);
+  if (response) {
+    return response;
   }
   return false;
 };
@@ -71,64 +75,58 @@ const createJobService = async (req, payload) => {
 
 const getJobListsService = async (
   req,
-  currentPage,
-  limit,
-  jobType,
-  employmentTypes,
-  experienceLevels,
-  search
+  currentPage = 1,
+  limit = 10,
+  jobType = "All",
+  employmentTypes = [],
+  experienceLevels = [],
+  search = ""
 ) => {
-  const page = parseInt(currentPage) || 0;
-  const limits = parseInt(limit) || 10;
-  const skip = (page - 1) * limits;
-  // Get total count of data
-  const queryTotalItem = countItems("jobs");
-  const [totalItems] = await getData(req.pool, queryTotalItem);
+  currentPage = parseInt(currentPage);
+  limit = parseInt(limit);
 
-  // Build the query for paginated jobs data with optional filters
-  let queryPaginatedJobs = "SELECT * FROM jobs";
+  currentPage = currentPage <= 0 ? 1 : currentPage; // Ensure currentPage is 1 or greater
+  limit = limit <= 0 ? 10 : limit; // Ensure limit is 10 or greater
 
-  const conditions = [];
-  if (jobType && jobType !== "All") {
-    conditions.push(`jobType = '${jobType}'`);
+  const skip = (currentPage - 1) * limit;
+  const filters = {};
+
+  // Build filters based on user-provided criteria
+  if (jobType !== "All") {
+    filters.jobType = jobType;
   }
-
-  // if (employmentTypes) {
-  //   conditions.push(`employmentType = '${employmentTypes}'`);
-  // }
-
+  if (employmentTypes.length > 0) {
+    filters.employmentType = { $in: employmentTypes };
+  }
   if (experienceLevels.length > 0) {
-    const experienceLevelCondition = experienceLevels
-      .map((type) => `jobType = '${type}'`)
-      .join(" OR ");
-    conditions.push(`(${experienceLevelCondition})`);
+    filters.experience = { $in: experienceLevels };
   }
-
-  if (employmentTypes && employmentTypes.length > 0) {
-    const employmentTypeCondition = employmentTypes
-      .map((type) => `employmentType = '${type}'`)
-      .join(" OR ");
-    conditions.push(`(${employmentTypeCondition})`);
-  }
-  //  search conditions
   if (search) {
-    conditions.push(
-      `(title LIKE '%${search}%' OR company LIKE '%${search}%' OR skills LIKE '%${search}%' OR tags LIKE '%${search}%')`
-    );
+    const searchRegex = new RegExp(search, "i");
+    filters.$or = [
+      { title: { $regex: searchRegex } },
+      { company: { $regex: searchRegex } },
+      { skills: { $regex: searchRegex } },
+      { tags: { $regex: searchRegex } },
+    ];
   }
 
-  // join and in condition array Ex: remote and freelancer and ......
-  if (conditions.length > 0) {
-    queryPaginatedJobs += " WHERE " + conditions.join(" AND ");
+  try {
+    const totalItems = await JobModel.countDocuments(filters);
+    const pipeline = [
+      { $match: filters },
+      { $skip: skip },
+      { $limit: limit }, // Ensure limit is passed as a number, not a string
+    ];
+
+    // Perform aggregation
+    const data = await JobModel.aggregate(pipeline);
+
+    return { data, totalItems };
+  } catch (error) {
+    console.error("Error in aggregation:", error);
+    throw error; // Propagate the error back to the caller
   }
-  // peginated job query
-  queryPaginatedJobs += ` LIMIT ? OFFSET ?`;
-
-  // Get paginated jobs data
-  const value = [limits, skip];
-  const data = await getData(req.pool, queryPaginatedJobs, value);
-
-  return { data, totalItems };
 };
 
 //get single job by job id
