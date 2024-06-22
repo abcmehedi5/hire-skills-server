@@ -70,7 +70,7 @@ const getJobListsController = async (req, res) => {
 const getSingleJobController = async (req, res) => {
   try {
     const id = req.params.id;
-    const result = await getSingleJobService(req, id);
+    const result = await getSingleJobService(id);
     return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
       message: "single job retrived successfull",
       status: MESSAGE.SUCCESS_GET.STATUS_CODE,

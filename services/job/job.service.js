@@ -130,12 +130,24 @@ const getJobListsService = async (
 };
 
 //get single job by job id
-const getSingleJobService = async (req, id) => {
-  const query = getsingleDataQuery("jobs", "id");
-  const value = [id];
-  const result = await getData(req.pool, query, value);
-  return result[0];
+const getSingleJobService = async (id) => {
+  console.log("wokrg",{id})
+  try {
+    // Assuming JobModel is your Mongoose model for jobs
+    const job = await JobModel.findById(id);
+
+    if (!job) {
+      // Handle case where job with given id is not found
+      return null;
+    }
+
+    return job;
+  } catch (error) {
+    console.error("Error in getSingleJobService:", error);
+    throw error;
+  }
 };
+
 
 // get job title for job search suggestion
 const getJobAllJobTitle = async (req, res) => {
