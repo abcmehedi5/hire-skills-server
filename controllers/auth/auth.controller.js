@@ -35,8 +35,7 @@ const registerController = async (req, res) => {
 const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const result = await loginService(req, email, password);
-    console.log(result);
+    const result = await loginService( email, password);
     if (result?.login) {
       return res
         .status(200)

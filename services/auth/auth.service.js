@@ -50,41 +50,38 @@ const registerService = async (body) => {
 };
 
 // login user
-const loginService = async (req, email, password) => {
-  const userCheckQuery = getsingleDataQuery("users", "email");
-  const emailCheckValue = [email];
-  const getCheckEmail = await getData(
-    req.pool,
-    userCheckQuery,
-    emailCheckValue
-  );
-  if (getCheckEmail.length === 0) {
-    return { message: "Account not found", login: false };
-  }
-  const storedHashedPassword = getCheckEmail[0].password;
+const loginService = async (email, password) => {
+  try {
+    // Find the user by email
+    const user = await AuthModel.findOne({ email });
+    if (!user) {
+      return { message: "Account not found", login: false };
+    }
 
-  // Load hash from your password DB.
-  const isPasswordCorrect = await bcrypt.compare(
-    password,
-    storedHashedPassword
-  );
-  if (!isPasswordCorrect) {
-    return { message: "Invalid Password", login: false };
-  }
-
-  if (isPasswordCorrect && getCheckEmail.length !== 0) {
-    const user = getCheckEmail[0];
-    // generate access and refresh toekn
-    const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
-      req.pool,
-      user.email
-    );
+    const storedHashedPassword = user.password;
+    // Compare the provided password with the stored hashed password
+    const isPasswordCorrect = await bcrypt.compare(password, storedHashedPassword);
+    
+    if (!isPasswordCorrect) {
+      return { message: "Invalid Password", login: false };
+    }
+    
+    // Generate access and refresh tokens
+    const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user.email, AuthModel);
+    console.log(accessToken)
 
     return {
       message: "Login Successful",
       login: true,
       refreshToken: refreshToken,
       accessToken: accessToken,
+    };
+
+  } catch (error) {
+    return {
+      message: "An error occurred during login",
+      error: true,
+      login: false,
     };
   }
 };
