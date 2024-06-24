@@ -131,9 +131,7 @@ const getJobListsService = async (
 
 //get single job by job id
 const getSingleJobService = async (id) => {
-  console.log("wokrg",{id})
   try {
-    // Assuming JobModel is your Mongoose model for jobs
     const job = await JobModel.findById(id);
 
     if (!job) {

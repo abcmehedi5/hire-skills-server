@@ -11,48 +11,42 @@ const {
   generateAccessAndRefereshTokens,
 } = require("../../util/jwtToken");
 const sendMail = require("../../util/mailer");
+const { AuthModel } = require("../../models/auth-model/auth.model");
 
 // create new user service
-const registerService = async (req, body) => {
+const registerService = async (body) => {
   const { email, password: pass, fullName, username } = body;
-  // hash password
-  const password = await bcrypt.hash(pass, 10);
-  // get single user by email
-  const userCheckQuery = getsingleDataQuery("users", "email");
-  // get single user by user name
-  const userNameCheckQuery = getsingleDataQuery("users", "username");
-  // register query
-  const registerQuery = userRegisterQuery("users");
-  const emailCheckValue = [email];
-  const userNameCheckValue = [username];
-  const registerValue = [email, password, fullName, username];
-  // get single user bye email
-  const getCheckEmail = await getData(
-    req.pool,
-    userCheckQuery,
-    emailCheckValue
-  );
-  // get single user user id
-  const getCheckUsername = await getData(
-    req.pool,
-    userNameCheckQuery,
-    userNameCheckValue
-  );
+  // Hash password
+  try {
+    const password = await bcrypt.hash(pass, 10);
 
-  if (getCheckEmail.length > 0) {
-    return { message: "Already registered with this email", register: false };
+    // Check if email or username already exists
+    const emailExists = await AuthModel.findOne({ email });
+    if (emailExists) {
+      return { message: "Already registered with this email", register: false };
+    }
+
+    const usernameExists = await AuthModel.findOne({ username });
+    if (usernameExists) {
+      return { message: "Username already used", register: false };
+    }
+
+    // Create and save new user
+    const newUser = new AuthModel({ email, password, fullName, username });
+    const savedUser = await newUser.save();
+
+    return {
+      message: "Registration successful",
+      error: false,
+      register: savedUser,
+    };
+  } catch (error) {
+    return {
+      message: "An error occurred during registration",
+      error: true,
+      register: null,
+    };
   }
-
-  if (getCheckUsername.length > 0) {
-    return { message: "Username already used", register: false };
-  }
-
-  const register = await executeQuery(req.pool, registerQuery, registerValue);
-  return {
-    message: "Registration successfull",
-    error: false,
-    register: register,
-  };
 };
 
 // login user

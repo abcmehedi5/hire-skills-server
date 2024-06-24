@@ -10,7 +10,7 @@ const { MESSAGE } = require("../../util/constant");
 // create new user
 const registerController = async (req, res) => {
   try {
-    const result = await registerService(req, req.body);
+    const result = await registerService(req.body);
     if (result?.register) {
       return res.status(200).json({
         message: "Register Successfull",
@@ -19,13 +19,15 @@ const registerController = async (req, res) => {
     } else if (!result?.register) {
       return res.status(400).json({
         message: result.message,
-        status: MESSAGE.BAD_REQUEST,
+        error: result.error,
+        data:result?.register
       });
     }
   } catch (error) {
-    return res
-      .status(500)
-      .send({ message: "There was a server side error please try again" });
+    return res.status(500).send({
+      message:
+        error?.message || "There was a server side error please try again",
+    });
   }
 };
 
@@ -115,9 +117,10 @@ const setForgotPasswordController = async (req, res) => {
       return res.status(500).json({ message: result.message });
     }
   } catch (error) {
-    return res
-      .status(500)
-      .send({ message: "There was a server side error please try again" });
+    return res.status(500).send({
+      message:
+        error?.message || "There was a server side error please try again",
+    });
   }
 };
 
