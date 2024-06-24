@@ -190,18 +190,25 @@ const setForgotPasswordService = async (password, email, token) => {
     return { message: "Password has been changed", error: false };
   } catch (error) {
     return {
-      message:  error?.message || "An error occurred while resetting the password",
+      message:
+        error?.message || "An error occurred while resetting the password",
       error: true,
     };
   }
 };
 
 // is loggedin user
-const getSingleUser = async (req, email) => {
-  const userQuery = getsingleDataQuery("users", "email");
-  const value = [email];
-  const response = await getData(req.pool, userQuery, value);
-  return response;
+const getSingleUserService = async (email) => {
+  try {
+    const response = AuthModel.findOne({ email });
+    return response;
+  } catch (error) {
+    return {
+      message:
+        error?.message || "An error occurred while resetting the password",
+      error: true,
+    };
+  }
 };
 
 module.exports = {
@@ -210,5 +217,5 @@ module.exports = {
   refreshAccessTokenService,
   forgotPasswordService,
   setForgotPasswordService,
-  getSingleUser,
+  getSingleUserService,
 };
