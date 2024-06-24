@@ -20,7 +20,7 @@ const registerController = async (req, res) => {
       return res.status(400).json({
         message: result.message,
         error: result.error,
-        data:result?.register
+        data: result?.register,
       });
     }
   } catch (error) {
@@ -35,7 +35,7 @@ const registerController = async (req, res) => {
 const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const result = await loginService( email, password);
+    const result = await loginService(email, password);
     if (result?.login) {
       return res
         .status(200)
@@ -98,9 +98,10 @@ const forgotPasswordController = async (req, res) => {
       url: result?.url,
     });
   } catch (error) {
-    return res
-      .status(500)
-      .send({ message: error?.message || "There was a server side error please try again" });
+    return res.status(500).send({
+      message:
+        error?.message || "There was a server side error please try again",
+    });
   }
 };
 
@@ -109,7 +110,7 @@ const setForgotPasswordController = async (req, res) => {
   try {
     const { email, token } = req.params;
     const password = req.body.password;
-    const result = await setForgotPasswordService(req, password, email, token);
+    const result = await setForgotPasswordService(password, email, token);
     if (!result.error) {
       return res.status(200).json({ message: result.message });
     } else {

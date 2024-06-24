@@ -60,15 +60,21 @@ const loginService = async (email, password) => {
 
     const storedHashedPassword = user.password;
     // Compare the provided password with the stored hashed password
-    const isPasswordCorrect = await bcrypt.compare(password, storedHashedPassword);
-    
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      storedHashedPassword
+    );
+
     if (!isPasswordCorrect) {
       return { message: "Invalid Password", login: false };
     }
-    
+
     // Generate access and refresh tokens
-    const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(user.email, AuthModel);
-    console.log(accessToken)
+    const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
+      user.email,
+      AuthModel
+    );
+    console.log(accessToken);
 
     return {
       message: "Login Successful",
@@ -76,7 +82,6 @@ const loginService = async (email, password) => {
       refreshToken: refreshToken,
       accessToken: accessToken,
     };
-
   } catch (error) {
     return {
       message: "An error occurred during login",
@@ -121,40 +126,73 @@ const forgotPasswordService = async (email) => {
         fullName: user.fullName,
         email: user.email,
       },
-      '10m'
+      "10m"
     );
 
     const url = `${process.env.CLIENT_URL}/reset-password/${user.email}/${token}`;
 
     // Send password reset mail
-    await sendMail(user.email, 'Password reset', url);
+    await sendMail(user.email, "Password reset", url);
 
     return {
       message: "Password reset email has been sent to your email.",
       url,
     };
   } catch (error) {
-    return { message: error?.message ||  "An error occurred while sending the reset email", error: true };
+    return {
+      message:
+        error?.message || "An error occurred while sending the reset email",
+      error: true,
+    };
   }
 };
 
 // set forgot new password
-const setForgotPasswordService = async (req, password, email, token) => {
-  const userQuery = getsingleDataQuery("users", "email");
-  const value = [email];
-  const response = await getData(req.pool, userQuery, value);
-  const user = response[0];
-  const isUserToken = await verifyJWT(token);
-  console.log(isUserToken);
-  if (user && isUserToken) {
+// const setForgotPasswordService = async (req, password, email, token) => {
+//   const userQuery = getsingleDataQuery("users", "email");
+//   const value = [email];
+//   const response = await getData(req.pool, userQuery, value);
+//   const user = response[0];
+//   const isUserToken = await verifyJWT(token);
+//   console.log(isUserToken);
+//   if (user && isUserToken) {
+//     const hashPassword = await bcrypt.hash(password, 10);
+//     // Update the user's password in the database
+//     const updatePasswordQuery = passwordUpdateQuery("users");
+//     const updatePasswordValues = [hashPassword, email];
+//     await executeQuery(req.pool, updatePasswordQuery, updatePasswordValues);
+//     return { message: "Password has been changed", error: false };
+//   } else {
+//     return { message: "Invalid Reset Passowrd Link", error: true };
+//   }
+// };
+
+const setForgotPasswordService = async (password, email, token) => {
+  try {
+    const user = await AuthModel.findOne({ email });
+
+    if (!user) {
+      return { message: "Invalid Reset Password Link", error: true };
+    }
+
+    const isUserToken = await verifyJWT(token, process.env.JWT_SECRET_KEY);
+
+    if (!isUserToken) {
+      return { message: "Invalid Reset Password Link", error: true };
+    }
+
     const hashPassword = await bcrypt.hash(password, 10);
+
     // Update the user's password in the database
-    const updatePasswordQuery = passwordUpdateQuery("users");
-    const updatePasswordValues = [hashPassword, email];
-    await executeQuery(req.pool, updatePasswordQuery, updatePasswordValues);
+    user.password = hashPassword;
+    await user.save();
+
     return { message: "Password has been changed", error: false };
-  } else {
-    return { message: "Invalid Reset Passowrd Link", error: true };
+  } catch (error) {
+    return {
+      message:  error?.message || "An error occurred while resetting the password",
+      error: true,
+    };
   }
 };
 
