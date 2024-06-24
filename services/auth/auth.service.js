@@ -107,30 +107,35 @@ const refreshAccessTokenService = async (req, res) => {
 };
 
 // forgot || reset password
-const forgotPasswordService = async (req, email) => {
-  const userQuery = getsingleDataQuery("users", "email");
-  const value = [email];
-  const response = await getData(req.pool, userQuery, value);
-  const user = response[0];
-  if (!user) {
-    return { message: "user not found with email" };
-  }
+const forgotPasswordService = async (email) => {
+  try {
+    const user = await AuthModel.findOne({ email });
 
-  // genarate json web token
-  const token = await genarateToken(
-    {
-      fullName: user.fullName,
-      email: user?.email,
-    },
-    "10m"
-  );
-  const url = `${process.env.CLIENT_URL}/reset-password/${user?.email}/${token}`;
-  // send password rest mail
-  await sendMail(user.email, "Password reset", url);
-  return {
-    message: "Password reset email has been sent on your email.",
-    url,
-  };
+    if (!user) {
+      return { message: "User not found with email" };
+    }
+
+    // Generate JSON web token
+    const token = await genarateToken(
+      {
+        fullName: user.fullName,
+        email: user.email,
+      },
+      '10m'
+    );
+
+    const url = `${process.env.CLIENT_URL}/reset-password/${user.email}/${token}`;
+
+    // Send password reset mail
+    await sendMail(user.email, 'Password reset', url);
+
+    return {
+      message: "Password reset email has been sent to your email.",
+      url,
+    };
+  } catch (error) {
+    return { message: error?.message ||  "An error occurred while sending the reset email", error: true };
+  }
 };
 
 // set forgot new password

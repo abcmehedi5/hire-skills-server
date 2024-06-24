@@ -92,7 +92,7 @@ const forgotPasswordController = async (req, res) => {
     if (!email) {
       return { message: "Invalid email address" };
     }
-    const result = await forgotPasswordService(req, email);
+    const result = await forgotPasswordService(email);
     return res.status(200).json({
       message: result?.message,
       url: result?.url,
@@ -100,7 +100,7 @@ const forgotPasswordController = async (req, res) => {
   } catch (error) {
     return res
       .status(500)
-      .send({ message: "There was a server side error please try again" });
+      .send({ message: error?.message || "There was a server side error please try again" });
   }
 };
 
