@@ -94,6 +94,7 @@ const loginService = async (email, password) => {
 // refresh access token
 const refreshAccessTokenService = async (req, res) => {
   const oldRefreshToken = req.cookies.refreshToken;
+  console.log({oldRefreshToken, cookie})
   // vrify old refresh token
   const { fullName, email } = await verifyJWT(
     oldRefreshToken,
@@ -147,26 +148,7 @@ const forgotPasswordService = async (email) => {
   }
 };
 
-// set forgot new password
-// const setForgotPasswordService = async (req, password, email, token) => {
-//   const userQuery = getsingleDataQuery("users", "email");
-//   const value = [email];
-//   const response = await getData(req.pool, userQuery, value);
-//   const user = response[0];
-//   const isUserToken = await verifyJWT(token);
-//   console.log(isUserToken);
-//   if (user && isUserToken) {
-//     const hashPassword = await bcrypt.hash(password, 10);
-//     // Update the user's password in the database
-//     const updatePasswordQuery = passwordUpdateQuery("users");
-//     const updatePasswordValues = [hashPassword, email];
-//     await executeQuery(req.pool, updatePasswordQuery, updatePasswordValues);
-//     return { message: "Password has been changed", error: false };
-//   } else {
-//     return { message: "Invalid Reset Passowrd Link", error: true };
-//   }
-// };
-
+//set a new password
 const setForgotPasswordService = async (password, email, token) => {
   try {
     const user = await AuthModel.findOne({ email });

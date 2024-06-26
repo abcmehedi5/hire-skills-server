@@ -82,7 +82,7 @@ const refreshAccessTokenController = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(500).send({ message: "access token not created" });
+    return res.status(500).send({ message: error?.message || "access token not created" });
   }
 };
 

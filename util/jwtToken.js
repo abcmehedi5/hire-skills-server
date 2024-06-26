@@ -79,7 +79,7 @@ const generateAccessAndRefereshTokens = async (email, model) => {
 
     const accessToken = await genarateToken(
       { fullName: user.fullName, email: user.email },
-      "5m"
+      "1d"
     );
 
     // Update user with the new refresh token

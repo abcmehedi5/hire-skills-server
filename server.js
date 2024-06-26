@@ -3,6 +3,7 @@ require("dotenv").config();
 const ip = require("ip");
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const app = express();
 const cors = require("cors");
 const morgan = require("morgan");
 const chalk = require("chalk");
@@ -14,10 +15,10 @@ const {
   getMethodColor,
 } = require("./util/helper");
 const { getConnectionPool } = require("./util/db");
-const app = express();
-const router = require("./routes/router");
 
-// Mongoose configuration 
+app.use(cookieParser());
+const router = require("./routes/router");
+// Mongoose configuration
 const mongoURI =
   process.env.MONGODB_URI || "mongodb://localhost:27017/hire-skill";
 mongoose
@@ -34,8 +35,25 @@ const port = process.env.PORT || 5000;
 const pool = getConnectionPool(); // Assuming getConnectionPool() provides a connection pool
 app.use("/storage", express.static("public"));
 app.use(body_parser.json());
-app.use(cors());
-app.use(cookieParser());
+// app.use(cors());
+const allowedOrigins = ["http://localhost:3000"];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl requests, etc.)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true, // Enable the 'Access-Control-Allow-Credentials' header
+  })
+);
+
 
 app.use((req, _, next) => {
   req.pool = pool; // Assuming this injects the connection pool into the request object
