@@ -10,6 +10,7 @@ const { executeQuery, getData } = require("../../util/dao");
 
 // create comment by blog
 const createJobService = async (req, payload) => {
+  console.log(payload)
   // const {
   //   title,
   //   company,

@@ -21,14 +21,6 @@ const jobSchema = new Schema(
       type: String,
       required: true,
     },
-    skills: {
-      type: [String], // Array of strings
-      required: true,
-    },
-    requirements: {
-      type: [String], // Array of strings
-      required: true,
-    },
     salary: {
       type: String,
     },
@@ -37,7 +29,6 @@ const jobSchema = new Schema(
     },
     jobType: {
       type: String,
-      enum: ["Onsite", "Remote"], // Optional: define allowed values for job type
     },
     vacancy: {
       type: Number,
@@ -46,7 +37,7 @@ const jobSchema = new Schema(
     employmentType: {
       type: String,
     },
-    createdBy: {
+    postedBy: {
       type: {
         fullName: {
           type: String,
@@ -70,10 +61,6 @@ const jobSchema = new Schema(
         },
         email: {
           type: String,
-          validate: {
-            validator: (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
-            message: "Invalid email format",
-          },
         },
         linkedin: {
           type: String,
@@ -85,10 +72,6 @@ const jobSchema = new Schema(
     },
     tags: {
       type: [String],
-    },
-    postDate: {
-      type: Date,
-      default: Date.now, // Set to current date by default
     },
   },
   { timestamps: true }
