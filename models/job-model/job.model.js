@@ -13,6 +13,9 @@ const jobSchema = new Schema(
     experience: {
       type: String,
     },
+    experienceLevel: {
+      type: String,
+    },
     location: {
       type: String,
       required: true,

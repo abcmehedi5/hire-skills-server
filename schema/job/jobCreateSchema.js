@@ -6,7 +6,7 @@ const jobSchema = Joi.object({
   location: Joi.string().required(),
   description: Joi.string().required(),
   // skills: Joi.array().required(),
-  // requirements: Joi.array().required(),
+  experienceLevel: Joi.string().required(),
   salary: Joi.string().required(),
   deadline: Joi.date().required(),
   jobType: Joi.string().required(),

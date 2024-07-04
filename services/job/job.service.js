@@ -29,66 +29,122 @@ const createJobService = async (req, payload) => {
 //   return {data, totalItems};
 // };
 
+// const getJobListsService = async (
+//   req,
+//   currentPage = 1,
+//   limit = 10,
+//   jobType = "All",
+//   employmentTypes = [],
+//   experienceLevels,
+//   search = ""
+// ) => {
+//   currentPage = parseInt(currentPage);
+//   limit = parseInt(limit);
+
+//   currentPage = currentPage <= 0 ? 1 : currentPage; // Ensure currentPage is 1 or greater
+//   limit = limit <= 0 ? 10 : limit; // Ensure limit is 10 or greater
+
+//   const skip = (currentPage - 1) * limit;
+//   const filters = {};
+
+//   // Build filters based on user-provided criteria
+//   if (jobType !== "All") {
+//     filters.jobType = jobType;
+//   }
+//   if (employmentTypes.length > 0) {
+//     filters.employmentType = { $in: employmentTypes };
+//   }
+//   if (experienceLevels.length > 0) {
+//     filters.experience = { $in: experienceLevels };
+//   }
+//   if (search) {
+//     const searchRegex = new RegExp(search, "i");
+//     filters.$or = [
+//       { title: { $regex: searchRegex } },
+//       // { company: { $regex: searchRegex } },
+//       // { skills: { $regex: searchRegex } },
+//       // { tags: { $regex: searchRegex } },
+//     ];
+//   }
+
+//   try {
+//     const totalItems = await JobModel.countDocuments(filters);
+//     const pipeline = [
+//       { $match: filters },
+//       { $skip: skip },
+//       { $limit: limit }, // Ensure limit is passed as a number, not a string
+//     ];
+
+//     // Perform aggregation
+//     const res = await JobModel.aggregate(pipeline);
+
+//     if (res) {
+//       return {
+//         data: res,
+//         totalItems,
+//         isSuccess: true,
+//         message: "jobs retrieved successfully",
+//       };
+//     }
+//   } catch (error) {
+//     console.error("Error in aggregation:", error);
+//     throw error; // Propagate the error back to the caller
+//   }
+// };
+
 const getJobListsService = async (
-  req,
-  currentPage = 1,
-  limit = 10,
-  jobType = "All",
-  employmentTypes = [],
-  experienceLevels = [],
-  search = ""
+  limit,
+  skip,
+  search,
+  filters,
+  sortField = "createdAt",
+  sortOrder = "desc"
 ) => {
-  currentPage = parseInt(currentPage);
-  limit = parseInt(limit);
-
-  currentPage = currentPage <= 0 ? 1 : currentPage; // Ensure currentPage is 1 or greater
-  limit = limit <= 0 ? 10 : limit; // Ensure limit is 10 or greater
-
-  const skip = (currentPage - 1) * limit;
-  const filters = {};
-
-  // Build filters based on user-provided criteria
-  if (jobType !== "All") {
-    filters.jobType = jobType;
-  }
-  if (employmentTypes.length > 0) {
-    filters.employmentType = { $in: employmentTypes };
-  }
-  if (experienceLevels.length > 0) {
-    filters.experience = { $in: experienceLevels };
-  }
-  if (search) {
-    const searchRegex = new RegExp(search, "i");
-    filters.$or = [
-      { title: { $regex: searchRegex } },
-      { company: { $regex: searchRegex } },
-      { skills: { $regex: searchRegex } },
-      { tags: { $regex: searchRegex } },
-    ];
-  }
-
   try {
+    let query = {};
+    if (search) {
+      query.$or = [{ title: { $regex: search, $options: "i" } }];
+    }
+    // apply filters if they are provided
+    if (filters) {
+      if (filters.experienceLevel) {
+        query.experienceLevel = filters.experienceLevel;
+      }
+      if (filters.employmentType) {
+        query.employmentType = filters.employmentType;
+      }
+      if (filters.jobType) {
+        query.jobType = filters.jobType;
+      }
+    }
+
+    // Determine sort order
+    const sort = {};
+    sort[sortField] = sortOrder?.toLowerCase() === "asc" ? 1 : -1;
     const totalItems = await JobModel.countDocuments(filters);
-    const pipeline = [
-      { $match: filters },
-      { $skip: skip },
-      { $limit: limit }, // Ensure limit is passed as a number, not a string
-    ];
-
-    // Perform aggregation
-    const res = await JobModel.aggregate(pipeline);
-
+    const res = await JobModel.aggregate([
+      { $match: query },
+      { $sort: sort },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }],
+          // totalCount: [{ $count: "value" }],
+        },
+      },
+    ]);
     if (res) {
       return {
-        data: res,
+        data: res[0].data,
         totalItems,
         isSuccess: true,
         message: "jobs retrieved successfully",
       };
     }
   } catch (error) {
-    console.error("Error in aggregation:", error);
-    throw error; // Propagate the error back to the caller
+    return {
+      isSuccess: false,
+      message: error.message,
+    };
   }
 };
 
