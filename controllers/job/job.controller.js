@@ -29,46 +29,7 @@ const createJobController = async (req, res) => {
   }
 };
 
-// get all job using pagination
-// const getJobListsController = async (req, res) => {
-//   try {
-//     const currentPage = req?.query?.currentPage;
-//     const limit = req?.query?.limit;
-//     const experienceLevel = req?.query?.experienceLevel; // expart
-//     const employmentType = req?.query?.employmentType; //  full time / part time
-//     const jobType = req?.query?.jobType; // onsite
-//     // Convert comma-separated strings to arrays
-//     const experienceLevels = experienceLevel ? experienceLevel.split(",") : [];
-//     const employmentTypes = employmentType ? employmentType.split(",") : [];
-//     const search = req?.query?.search; // title, company name , tags
-
-//     const result = await getJobListsService(
-//       req,
-//       currentPage,
-//       limit,
-//       jobType,
-//       employmentTypes,
-//       experienceLevels,
-//       search
-//     );
-
-//     return res.status(200).json({
-//       message: result?.message,
-//       status: 200,
-//       isSuccess: result?.isSuccess,
-//       totalItems: result?.totalItems,
-//       totalCurrentItems: result?.data?.length,
-//       data: result?.data,
-//     });
-//   } catch (error) {
-//     return res.status(500).json({
-//       status: 500,
-//       isSuccess: false,
-//       message: error.message || "There was a server side error",
-//     });
-//   }
-// };
-
+// get all job
 const getJobListsController = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
