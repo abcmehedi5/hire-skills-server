@@ -12,9 +12,9 @@ const createJobController = async (req, res) => {
   try {
     const result = await createJobService(req, payload);
     if (result) {
-      return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
+      return res.status(200).json({
         message: "Job Posted Successfully",
-        status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+        status: 200,
       });
     }
     return res.status(MESSAGE.NOT_FOUND.STATUS_CODE).json({
@@ -40,9 +40,9 @@ const getJobListsController = async (req, res) => {
     // Convert comma-separated strings to arrays
     const experienceLevels = experienceLevel ? experienceLevel.split(",") : [];
     const employmentTypes = employmentType ? employmentType.split(",") : [];
-
     const search = req?.query?.search; // title, company name , tags
-    const paginatedJobs = await getJobListsService(
+
+    const result = await getJobListsService(
       req,
       currentPage,
       limit,
@@ -52,17 +52,20 @@ const getJobListsController = async (req, res) => {
       search
     );
 
-    return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
-      message: "jobs retrieved successfully",
-      status: MESSAGE.SUCCESS_GET.STATUS_CODE,
-      totalItems: paginatedJobs.totalItems.totalItems,
-      totalCurrentItems: paginatedJobs.data.length,
-      data: paginatedJobs.data,
+    return res.status(200).json({
+      message: result?.message,
+      status: 200,
+      isSuccess: result?.isSuccess,
+      totalItems: result?.totalItems,
+      totalCurrentItems: result?.data?.length,
+      data: result?.data,
     });
   } catch (error) {
-    return res
-      .status(MESSAGE.SERVER_ERROR.STATUS_CODE)
-      .send(MESSAGE.SERVER_ERROR.CONTENT);
+    return res.status(500).json({
+      status: 500,
+      isSuccess: false,
+      message: error.message || "There was a server side error",
+    });
   }
 };
 
@@ -71,9 +74,9 @@ const getSingleJobController = async (req, res) => {
   try {
     const id = req.params.id;
     const result = await getSingleJobService(id);
-    return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
+    return res.status(200).json({
       message: "single job retrived successfull",
-      status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+      status: 200,
       data: result,
     });
   } catch (error) {

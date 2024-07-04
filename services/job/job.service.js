@@ -1,54 +1,9 @@
 const { JobModel } = require("../../models/job-model/job.model");
-const { createJobQuery } = require("../../sql_queries/jobSqlQuery");
-const {
-  countItems,
-  getItemsPaginated,
-  getsingleDataQuery,
-  getPropertyQuery,
-} = require("../../sql_queries/sqlQuery");
+const { getPropertyQuery } = require("../../sql_queries/sqlQuery");
 const { executeQuery, getData } = require("../../util/dao");
 
 // create comment by blog
 const createJobService = async (req, payload) => {
-  console.log(payload)
-  // const {
-  //   title,
-  //   company,
-  //   experience,
-  //   location,
-  //   description,
-  //   skills,
-  //   requirements,
-  //   salary,
-  //   deadline,
-  //   jobType,
-  //   vacancy,
-  //   employmentType,
-  //   createdBy,
-  //   contacts,
-  //   tags,
-  //   postDate,
-  // } = payload;
-  // const query = createJobQuery("jobs");
-  // const values = [
-  //   title,
-  //   company,
-  //   experience,
-  //   location,
-  //   description,
-  //   JSON.stringify(skills),
-  //   JSON.stringify(requirements),
-  //   salary,
-  //   deadline,
-  //   jobType,
-  //   vacancy,
-  //   employmentType,
-  //   JSON.stringify(createdBy),
-  //   JSON.stringify(contacts),
-  //   JSON.stringify(tags),
-  //   postDate,
-  // ];
-
   // save to the database
   const response = JobModel.create(payload);
   // const insert = await executeQuery(req.pool, query, values);
@@ -121,9 +76,16 @@ const getJobListsService = async (
     ];
 
     // Perform aggregation
-    const data = await JobModel.aggregate(pipeline);
+    const res = await JobModel.aggregate(pipeline);
 
-    return { data, totalItems };
+    if (res) {
+      return {
+        data: res,
+        totalItems,
+        isSuccess: true,
+        message: "jobs retrieved successfully",
+      };
+    }
   } catch (error) {
     console.error("Error in aggregation:", error);
     throw error; // Propagate the error back to the caller
@@ -146,7 +108,6 @@ const getSingleJobService = async (id) => {
     throw error;
   }
 };
-
 
 // get job title for job search suggestion
 const getJobAllJobTitle = async (req, res) => {
