@@ -13,6 +13,10 @@ const jobSchema = new Schema(
     experience: {
       type: String,
     },
+    applyLink: {
+      type: String,
+      required: true,
+    },
     experienceLevel: {
       type: String,
     },

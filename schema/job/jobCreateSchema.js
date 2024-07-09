@@ -10,6 +10,7 @@ const jobSchema = Joi.object({
   salary: Joi.string().required(),
   deadline: Joi.date().required(),
   jobType: Joi.string().required(),
+  applyLink: Joi.string().required(),
   vacancy: Joi.number().required(),
   salarytimeframe: Joi.string().required(),
   employmentType: Joi.string().required(),

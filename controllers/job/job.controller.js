@@ -62,7 +62,6 @@ const getJobListsController = async (req, res) => {
       sortField,
       sortOrder
     );
-    console.log(result);
     if (result.isSuccess) {
       res.status(200).json({
         message: result?.message,
