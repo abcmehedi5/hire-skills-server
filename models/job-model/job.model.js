@@ -44,6 +44,9 @@ const jobSchema = new Schema(
     employmentType: {
       type: String,
     },
+    skills: {
+      type: [String],
+    },
     postedBy: {
       type: {
         fullName: {
