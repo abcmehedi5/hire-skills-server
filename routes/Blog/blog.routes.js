@@ -7,6 +7,7 @@ const {
   getBlogByCategory,
   getMyblogByEmail,
   deleteBlogById,
+  createBlogController,
 } = require("../../controllers/Blog/blog_controllers");
 
 const validator = require("../../middlewares/validator_middleware");
@@ -14,11 +15,7 @@ const validator = require("../../middlewares/validator_middleware");
 const blogRouter = express.Router();
 
 // Post blogs
-blogRouter.post(
-  API.API_CONTEXT + "blog/create",
-  validator(blogSchema),
-  blogController
-);
+blogRouter.post(API.API_CONTEXT + "blog/create", createBlogController);
 // Get blogs by category
 blogRouter.get(API.API_CONTEXT + "blog/get-blogs/:id", getBlogById);
 // Get blogs by category using query parameter

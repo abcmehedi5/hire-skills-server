@@ -1,4 +1,3 @@
-const Joi = require("joi");
 const { MESSAGE } = require("../../util/constant");
 const {
   blogServices,
@@ -6,32 +5,23 @@ const {
   getCategoryBlog,
   getMyblog,
   deleteBlog,
+  createBlog,
 } = require("../../services/Blog/blog_service");
 
-const schema = Joi.object({
-  title: Joi.string().min(1).max(128).required(),
-  content: Joi.string().min(1).max(1000).required(),
-  image: Joi.string().min(1).max(128).required(),
-  category: Joi.string().min(1).max(128).required(),
-  date: Joi.string().min(1).max(128).required(),
-  email: Joi.string().email().min(5).max(50).required(),
-  author: Joi.string().min(1).max(128).required(),
-});
-
 // create blog
-const controller = async (req, res) => {
+const createBlogController = async (req, res) => {
+  const payload = req.body;
   try {
-    const data = await blogServices(req, req.body);
+    const data = await createBlog(payload);
+    console.log(data)
     if (data) {
-      return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
+      return res.status(200).json({
         message: "Blog created successfull",
-        status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+        status: 200,
         data,
       });
     }
-    return res
-      .status(MESSAGE.SUCCESS_GET.STATUS_CODE)
-      .json({ message: "blog not created" });
+    return res.status(500).json({ message: "blog not created" });
   } catch (error) {
     console.log(error);
     return res
@@ -140,8 +130,7 @@ const deleteBlogById = async (req, res) => {
 };
 
 module.exports = {
-  controller,
-  schema,
+  createBlogController,
   getBlogById,
   getBlogByCategory,
   getMyblogByEmail,
