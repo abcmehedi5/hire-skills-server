@@ -32,48 +32,129 @@ const getBlog = async (id) => {
   }
 };
 
-const getCategoryBlog = async (category, currentPage, limit) => {
-  const page = parseInt(currentPage) || 1;
-  const limits = parseInt(limit) || 10;
-  const skip = (page - 1) * limits; // total skip of number
+// const getCategoryBlog = async (category, currentPage, limit) => {
+//   const page = parseInt(currentPage) || 1;
+//   const limits = parseInt(limit) || 10;
+//   const skip = (page - 1) * limits; // total skip of number
 
+//   try {
+//     // Fetch all unique categories from the database
+//     const uniqueCategoriesFromDatabase = await BlogModel.distinct("category");
+//     const uniqueCategories = ["All", ...uniqueCategoriesFromDatabase];
+
+//     if (!category) {
+//       // Count total number of documents in the blogs collection
+//       const totalCount = await BlogModel.countDocuments({});
+//       // If no category is provided, return paginated blog posts for all categories
+//       const allBlogs = await BlogModel.find({}).limit(limits).skip(skip);
+//       if (!allBlogs || allBlogs.length === 0) {
+//         throw new Error("No blog data found.");
+//       }
+//       return { allBlogs, uniqueCategories, totalBlogs: totalCount };
+//     } else {
+//       // If a category is provided, return paginated blog posts for that category
+//       const getCategoryBlog = await BlogModel.find({ category })
+//         .limit(limits)
+//         .skip(skip);
+//       // Count total number of documents for the specified category
+//       const categoryTotalCount = await BlogModel.countDocuments({ category });
+//       if (!getCategoryBlog || getCategoryBlog.length === 0) {
+//         throw new Error(
+//           `Oh! Sorry, no blog data found for category: ${category}. Please try again.`
+//         );
+//       }
+//       return {
+//         allBlogs: getCategoryBlog,
+//         uniqueCategories,
+//         totalBlogs: categoryTotalCount,
+//       };
+//     }
+//   } catch (error) {
+//     console.error(error.message);
+//     throw error;
+//   }
+// };
+
+
+
+
+
+const getCategoryBlog = async (
+  limit,
+  skip,
+  search,
+  filters,
+  sortField = "createdAt",
+  sortOrder = "desc"
+) => {
   try {
-    // Fetch all unique categories from the database
-    const uniqueCategoriesFromDatabase = await BlogModel.distinct("category");
-    const uniqueCategories = ["All", ...uniqueCategoriesFromDatabase];
+    let query = {};
+    if (search) {
+      query.$or = [{ title: { $regex: search, $options: "i" } }];
+    }
+    // apply filters if they are provided
+    if (filters) {
+      if (filters.category) {
+        query.category = filters.category;
+      }
+    }
 
-    if (!category) {
-      // Count total number of documents in the blogs collection
-      const totalCount = await BlogModel.countDocuments({});
-      // If no category is provided, return paginated blog posts for all categories
-      const allBlogs = await BlogModel.find({}).limit(limits).skip(skip);
-      if (!allBlogs || allBlogs.length === 0) {
-        throw new Error("No blog data found.");
-      }
-      return { allBlogs, uniqueCategories, totalBlogs: totalCount };
-    } else {
-      // If a category is provided, return paginated blog posts for that category
-      const getCategoryBlog = await BlogModel.find({ category })
-        .limit(limits)
-        .skip(skip);
-      // Count total number of documents for the specified category
-      const categoryTotalCount = await BlogModel.countDocuments({ category });
-      if (!getCategoryBlog || getCategoryBlog.length === 0) {
-        throw new Error(
-          `Oh! Sorry, no blog data found for category: ${category}. Please try again.`
-        );
-      }
+    // Determine sort order
+    const sort = {};
+    sort[sortField] = sortOrder?.toLowerCase() === "asc" ? 1 : -1;
+    const totalItems = await BlogModel.countDocuments(filters);
+    const res = await BlogModel.aggregate([
+      { $match: query },
+      { $sort: sort },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }],
+          // totalCount: [{ $count: "value" }],
+        },
+      },
+    ]);
+    if (res) {
       return {
-        allBlogs: getCategoryBlog,
-        uniqueCategories,
-        totalBlogs: categoryTotalCount,
+        data: res[0].data,
+        totalItems,
+        isSuccess: true,
+        message: "Blog retrieved successfully",
       };
     }
   } catch (error) {
-    console.error(error.message);
-    throw error;
+    return {
+      isSuccess: false,
+      message: error.message,
+    };
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // get my blog by email
 const getMyblog = async (email) => {

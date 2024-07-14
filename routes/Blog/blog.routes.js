@@ -19,7 +19,7 @@ blogRouter.post(API.API_CONTEXT + "blog/create", createBlogController);
 // Get blogs by category
 blogRouter.get(API.API_CONTEXT + "blog/get-blogs/:id", getBlogById);
 // Get blogs by category using query parameter
-blogRouter.get(API.API_CONTEXT + "blog", getBlogByCategory);
+blogRouter.get(API.API_CONTEXT + "blog/get-blogs", getBlogByCategory);
 // get blogs by user email
 blogRouter.get(API.API_CONTEXT + "blog/Myblog", getMyblogByEmail);
 // delete blog by  blog id

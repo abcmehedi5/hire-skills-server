@@ -13,7 +13,7 @@ const createBlogController = async (req, res) => {
   const payload = req.body;
   try {
     const data = await createBlog(payload);
-    console.log(data)
+    console.log(data);
     if (data) {
       return res.status(200).json({
         message: "Blog created successfull",
@@ -58,27 +58,35 @@ const getBlogById = async (req, res) => {
 const getBlogByCategory = async (req, res) => {
   try {
     const category = req?.query?.category;
-    // pagination
-    const currentPage = req?.query?.currentPage;
-    const limit = req?.query?.limit;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const sortField = req?.query?.sortField || "createdAt";
+    const search = req?.query?.search;
+    const sortOrder = req?.query?.sortOrder || "desc";
+    // filters
+    let filters = {};
+    // check type of filters
+    if (category) {
+      filters.category = category;
+    }
     // Call your service function to get blog data by category
     const categoryBlogData = await getCategoryBlog(
-      req.pool,
-      category,
-      currentPage,
-      limit
+      limit,
+      skip,
+      search,
+      filters,
+      sortField,
+      sortOrder
     );
-
-    return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
+    return res.status(200).json({
       message: "Blog retrieved successfully",
-      status: MESSAGE.SUCCESS_GET.STATUS_CODE,
-      data: categoryBlogData,
+      totalItems: categoryBlogData?.totalItems,
+      isSuccess: categoryBlogData?.isSuccess,
+      data: categoryBlogData.data,
     });
   } catch (error) {
-    console.log(error.message);
-    return res
-      .status(MESSAGE.SERVER_ERROR.STATUS_CODE)
-      .send(MESSAGE.SERVER_ERROR.CONTENT);
+    return res.status(500).send(error.message);
   }
 };
 
