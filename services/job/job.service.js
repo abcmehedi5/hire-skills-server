@@ -1,130 +1,102 @@
-const { countItems, getItemsPaginated } = require("../../sql_queries/sqlQuery");
+const { JobModel } = require("../../models/job-model/job.model");
+const { getPropertyQuery } = require("../../sql_queries/sqlQuery");
 const { executeQuery, getData } = require("../../util/dao");
 
 // create comment by blog
 const createJobService = async (req, payload) => {
-  const {
-    title,
-    company,
-    experience,
-    location,
-    description,
-    skills,
-    requirements,
-    salary,
-    deadline,
-    jobType,
-    vacancy,
-    employmentType,
-    createdBy,
-    contacts,
-    tags,
-    postDate,
-  } = payload;
-  const query = `INSERT INTO jobs (title, company, experience, location, description, skills, requirements, salary, deadline, jobType, vacancy, employmentType, createdBy, contacts, tags, postDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-  const values = [
-    title,
-    company,
-    experience,
-    location,
-    description,
-    JSON.stringify(skills),
-    JSON.stringify(requirements),
-    salary,
-    deadline,
-    jobType,
-    vacancy,
-    employmentType,
-    JSON.stringify(createdBy),
-    JSON.stringify(contacts),
-    JSON.stringify(tags),
-    postDate,
-  ];
-  const insert = await executeQuery(req.pool, query, values);
-  if (insert) {
-    return true;
+  // save to the database
+  const response = JobModel.create(payload);
+  // const insert = await executeQuery(req.pool, query, values);
+  if (response) {
+    return response;
   }
   return false;
 };
 
 // get all jobs by paginated and filter
-
-// const getJobListsService = async (req, currentPage, limit, search, jobType, employmentType) => {
-//   const page = parseInt(currentPage) || 0;
-//   const limits = parseInt(limit) || 10;
-//   const skip = (page - 1) * limits;
-//   //get total count of data
-//   const queryTotalItem = countItems('jobs')
-//   const [totalItems] = await getData(req.pool, queryTotalItem)
-//   // get all jobs paginated data
-//   const queryPaginatedJobs = getItemsPaginated('jobs');
-//   const value = [limits, skip];
-//   const data = await getData(req.pool, queryPaginatedJobs, value);
-//   return {data, totalItems};
-// };
-
 const getJobListsService = async (
-  req,
-  currentPage,
   limit,
-  jobType,
-  employmentTypes,
-  experienceLevels,
-  search
+  skip,
+  search,
+  filters,
+  sortField = "createdAt",
+  sortOrder = "desc"
 ) => {
-  // console.log(employmentTypes , experienceLevels)
-  const page = parseInt(currentPage) || 0;
-  const limits = parseInt(limit) || 10;
-  const skip = (page - 1) * limits;
-  // Get total count of data
-  const queryTotalItem = countItems("jobs");
-  const [totalItems] = await getData(req.pool, queryTotalItem);
+  try {
+    let query = {};
+    if (search) {
+      query.$or = [{ title: { $regex: search, $options: "i" } }];
+    }
+    // apply filters if they are provided
+    if (filters) {
+      if (filters.experienceLevel) {
+        query.experienceLevel = filters.experienceLevel;
+      }
+      if (filters.employmentType) {
+        query.employmentType = filters.employmentType;
+      }
+      if (filters.jobType) {
+        query.jobType = filters.jobType;
+      }
+    }
 
-  // Build the query for paginated jobs data with optional filters
-  let queryPaginatedJobs = "SELECT * FROM jobs";
-
-  const conditions = [];
-  if (jobType && jobType !== "All") {
-    conditions.push(`jobType = '${jobType}'`);
+    // Determine sort order
+    const sort = {};
+    sort[sortField] = sortOrder?.toLowerCase() === "asc" ? 1 : -1;
+    const totalItems = await JobModel.countDocuments(filters);
+    const res = await JobModel.aggregate([
+      { $match: query },
+      { $sort: sort },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }],
+          // totalCount: [{ $count: "value" }],
+        },
+      },
+    ]);
+    if (res) {
+      return {
+        data: res[0].data,
+        totalItems,
+        isSuccess: true,
+        message: "jobs retrieved successfully",
+      };
+    }
+  } catch (error) {
+    return {
+      isSuccess: false,
+      message: error.message,
+    };
   }
-
-  // if (employmentTypes) {
-  //   conditions.push(`employmentType = '${employmentTypes}'`);
-  // }
-
-  if (experienceLevels.length > 0) {
-    const experienceLevelCondition = experienceLevels
-      .map((type) => `jobType = '${type}'`)
-      .join(" OR ");
-    conditions.push(`(${experienceLevelCondition})`);
-  }
-
-  if (employmentTypes && employmentTypes.length > 0) {
-    const employmentTypeCondition = employmentTypes
-      .map((type) => `employmentType = '${type}'`)
-      .join(" OR ");
-    conditions.push(`(${employmentTypeCondition})`);
-  }
-  //  search conditions
-  if (search) {
-    conditions.push(
-      `(title LIKE '%${search}%' OR company LIKE '%${search}%' OR skills LIKE '%${search}%' OR tags LIKE '%${search}%')`
-    );
-  }
-
-  // join and in condition array Ex: remote and freelancer and ......
-  if (conditions.length > 0) {
-    queryPaginatedJobs += " WHERE " + conditions.join(" AND ");
-  }
-  // peginated job query
-  queryPaginatedJobs += ` LIMIT ? OFFSET ?`;
-
-  // Get paginated jobs data
-  const value = [limits, skip];
-  const data = await getData(req.pool, queryPaginatedJobs, value);
-
-  return { data, totalItems };
 };
 
-module.exports = { createJobService, getJobListsService };
+//get single job by job id
+const getSingleJobService = async (id) => {
+  try {
+    const job = await JobModel.findById(id);
+
+    if (!job) {
+      // Handle case where job with given id is not found
+      return null;
+    }
+
+    return job;
+  } catch (error) {
+    console.error("Error in getSingleJobService:", error);
+    throw error;
+  }
+};
+
+// get job title for job search suggestion
+const getJobAllJobTitle = async (req, res) => {
+  const query = getPropertyQuery("title, tags", "jobs");
+  const result = await getData(req.pool, query);
+  return result;
+};
+
+module.exports = {
+  createJobService,
+  getJobListsService,
+  getSingleJobService,
+  getJobAllJobTitle,
+};

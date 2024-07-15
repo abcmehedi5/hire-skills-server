@@ -1,17 +1,20 @@
 const {
   createJobService,
   getJobListsService,
+  getSingleJobService,
+  getJobAllJobTitle,
 } = require("../../services/job/job.service");
 const { MESSAGE } = require("../../util/constant");
 
 // post new job
 const createJobController = async (req, res) => {
+  const payload = req.body;
   try {
-    const result = await createJobService(req, req.body);
+    const result = await createJobService(req, payload);
     if (result) {
-      return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
+      return res.status(200).json({
         message: "Job Posted Successfully",
-        status: MESSAGE.SUCCESS_GET.STATUS_CODE,
+        status: 200,
       });
     }
     return res.status(MESSAGE.NOT_FOUND.STATUS_CODE).json({
@@ -26,35 +29,66 @@ const createJobController = async (req, res) => {
   }
 };
 
-// get all job using pagination
+// get all job
 const getJobListsController = async (req, res) => {
   try {
-    const currentPage = req?.query?.currentPage;
-    const limit = req?.query?.limit;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const sortField = req?.query?.sortField || "createdAt";
+    const search = req?.query?.search;
+    const sortOrder = req?.query?.sortOrder || "desc";
     const experienceLevel = req?.query?.experienceLevel; // expart
     const employmentType = req?.query?.employmentType; //  full time / part time
     const jobType = req?.query?.jobType; // onsite
-    // Convert comma-separated strings to arrays
-    const experienceLevels = experienceLevel ? experienceLevel.split(",") : [];
-    const employmentTypes = employmentType ? employmentType.split(",") : [];
 
-    const search = req?.query?.search; // title, company name , tags
-    const paginatedJobs = await getJobListsService(
-      req,
-      currentPage,
+    // filters
+    const filters = {};
+    // check type of filters
+    if (experienceLevel) {
+      filters.experienceLevel = experienceLevel;
+    }
+    if (employmentType) {
+      filters.employmentType = employmentType;
+    }
+    if (jobType) {
+      filters.jobType = jobType;
+    }
+    const result = await getJobListsService(
       limit,
-      jobType,
-      employmentTypes,
-      experienceLevels,
-      search
+      skip,
+      search,
+      filters,
+      sortField,
+      sortOrder
     );
+    if (result.isSuccess) {
+      res.status(200).json({
+        message: result?.message,
+        status: 200,
+        isSuccess: result?.isSuccess,
+        totalItems: result?.totalItems,
+        totalCurrentItems: result?.data?.length,
+        data: result?.data,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      isSuccess: false,
+    });
+  }
+};
 
-    return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
-      message: "jobs retrieved successfully",
-      status: MESSAGE.SUCCESS_GET.STATUS_CODE,
-      totalItems: paginatedJobs.totalItems.totalItems,
-      totalCurrentItems: paginatedJobs.data.length,
-      data: paginatedJobs.data,
+// get single job controller
+const getSingleJobController = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const result = await getSingleJobService(id);
+    return res.status(200).json({
+      message: "single job retrived successfull",
+      status: 200,
+      data: result,
     });
   } catch (error) {
     return res
@@ -63,4 +97,23 @@ const getJobListsController = async (req, res) => {
   }
 };
 
-module.exports = { createJobController, getJobListsController };
+const getJobAllJobTitleController = async (req, res) => {
+  try {
+    const result = await getJobAllJobTitle(req, res);
+    return res.status(200).json({
+      message: "title retrived successfull",
+      data: result,
+    });
+  } catch (error) {
+    return res
+      .status(MESSAGE.SERVER_ERROR.STATUS_CODE)
+      .send(MESSAGE.SERVER_ERROR.CONTENT);
+  }
+};
+
+module.exports = {
+  createJobController,
+  getJobListsController,
+  getSingleJobController,
+  getJobAllJobTitleController,
+};
