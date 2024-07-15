@@ -20,7 +20,7 @@ app.use(cookieParser());
 const router = require("./routes/router");
 // Mongoose configuration
 const mongoURI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/hire-skill";
+  process.env.MONGODB_URI;
 mongoose
   .connect(mongoURI, {
     useNewUrlParser: true,
@@ -31,7 +31,7 @@ mongoose
 
 app.use(morgan("dev"));
 const body_parser = require("body-parser");
-const port = process.env.PORT || 5000;
+const port = process.env.PORT;
 const pool = getConnectionPool(); // Assuming getConnectionPool() provides a connection pool
 app.use("/storage", express.static("public"));
 app.use(body_parser.json());
