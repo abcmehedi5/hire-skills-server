@@ -34,7 +34,7 @@ const createBlogController = async (req, res) => {
 const getBlogById = async (req, res) => {
   try {
     const id = req.params.id;
-    const blogData = await getBlog(req, id);
+    const blogData = await getBlog(id);
     if (blogData) {
       return res.status(MESSAGE.SUCCESS_GET.STATUS_CODE).json({
         message: "Blog retrieved successfully",
