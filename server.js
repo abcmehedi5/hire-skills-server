@@ -27,7 +27,6 @@ mongoose
   })
   .then(() => console.log(chalk.green("MongoDB connected successfully!")))
   .catch((err) => console.error(chalk.red("MongoDB connection error:", err)));
-
 app.use(morgan("dev"));
 const body_parser = require("body-parser");
 const port = process.env.PORT;
