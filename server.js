@@ -19,8 +19,7 @@ const { getConnectionPool } = require("./util/db");
 app.use(cookieParser());
 const router = require("./routes/router");
 // Mongoose configuration
-const mongoURI =
-  process.env.MONGODB_URI;
+const mongoURI = process.env.MONGODB_URI;
 mongoose
   .connect(mongoURI, {
     useNewUrlParser: true,
@@ -36,7 +35,7 @@ const pool = getConnectionPool(); // Assuming getConnectionPool() provides a con
 app.use("/storage", express.static("public"));
 app.use(body_parser.json());
 // app.use(cors());
-const allowedOrigins = ["http://localhost:3000"];
+const allowedOrigins = ["http://localhost:3000", "http://195.35.9.33:8000"];
 
 app.use(
   cors({
@@ -53,7 +52,6 @@ app.use(
     credentials: true, // Enable the 'Access-Control-Allow-Credentials' header
   })
 );
-
 
 app.use((req, _, next) => {
   req.pool = pool; // Assuming this injects the connection pool into the request object
