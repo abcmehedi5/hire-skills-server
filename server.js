@@ -3,11 +3,12 @@ require("dotenv").config();
 const ip = require("ip");
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const app = express();
 const cors = require("cors");
 const morgan = require("morgan");
 const chalk = require("chalk");
-const mongoose = require("mongoose"); // Import Mongoose
+const mongoose = require("mongoose");
+const { createServer } = require("http");
+const socketIo = require("socket.io");
 
 const {
   getEndpoints,
@@ -16,9 +17,26 @@ const {
 } = require("./util/helper");
 const { getConnectionPool } = require("./util/db");
 
-app.use(cookieParser());
-const router = require("./routes/router");
-// Mongoose configuration
+const app = express();
+const server = createServer(app); // Create an HTTP server
+const io = socketIo(server, {
+  cors: {
+    origin: ["http://localhost:3000", "http://195.35.9.33:8000"],
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+// Socket.io connection handling
+io.on("connection", (socket) => {
+  console.log(chalk.green("New client connected:", socket.id));
+
+  socket.on("disconnect", () => {
+    console.log(chalk.red("Client disconnected:", socket.id));
+  });
+});
+
+// MongoDB configuration
 const mongoURI = process.env.MONGODB_URI;
 mongoose
   .connect(mongoURI, {
@@ -27,19 +45,20 @@ mongoose
   })
   .then(() => console.log(chalk.green("MongoDB connected successfully!")))
   .catch((err) => console.error(chalk.red("MongoDB connection error:", err)));
+
+app.use(cookieParser());
 app.use(morgan("dev"));
 const body_parser = require("body-parser");
-const port = process.env.PORT;
-const pool = getConnectionPool(); // Assuming getConnectionPool() provides a connection pool
+const port = process.env.PORT || 3000;
+const pool = getConnectionPool();
 app.use("/storage", express.static("public"));
 app.use(body_parser.json());
-// app.use(cors());
+
 const allowedOrigins = ["http://localhost:3000", "http://195.35.9.33:8000"];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps, curl requests, etc.)
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) === -1) {
         const msg =
@@ -48,16 +67,17 @@ app.use(
       }
       return callback(null, true);
     },
-    credentials: true, // Enable the 'Access-Control-Allow-Credentials' header
+    credentials: true,
   })
 );
 
+const router = require("./routes/router");
 app.use((req, _, next) => {
-  req.pool = pool; // Assuming this injects the connection pool into the request object
+  req.pool = pool;
+  req.io = io; // Make the io instance accessible in the request object
   next();
 }, router);
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   if (err) {
     console.error(chalk.red("Error:", err));
@@ -65,10 +85,10 @@ app.use((err, req, res, next) => {
   }
 });
 
-app.listen(port, async () => {
+server.listen(port, async () => {
   const endpoints = getEndpoints(router);
-  console.log("Method" + "            " + "Path");
-  console.log("------" + "            " + "-----");
+  console.log("Method" + "            " + "Path");
+  console.log("------" + "            " + "-----");
   endpoints.forEach((endpoint) => {
     const cleanedPath = endpoint.path.slice(12);
     const spaces = getSpaceForPrintingPath(endpoint.method, 15);

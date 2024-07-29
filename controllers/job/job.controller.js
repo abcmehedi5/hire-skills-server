@@ -3,6 +3,7 @@ const {
   getJobListsService,
   getSingleJobService,
   getJobAllJobTitle,
+  createNotification,
 } = require("../../services/job/job.service");
 const { MESSAGE } = require("../../util/constant");
 
@@ -111,9 +112,31 @@ const getJobAllJobTitleController = async (req, res) => {
   }
 };
 
+// post new job
+const createNotificationController = async (req, res) => {
+  const payload = req.body;
+  try {
+    const result = await createNotification(req.io, payload); // Pass the io instance
+    if (result) {
+      return res.status(200).json({
+        message: "Job Posted Successfully",
+        status: 200,
+      });
+    }
+    return res.status(404).json({
+      message: "Can't Post Job",
+      status: 404,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send("Server error");
+  }
+};
+
 module.exports = {
   createJobController,
   getJobListsController,
   getSingleJobController,
   getJobAllJobTitleController,
+  createNotificationController,
 };

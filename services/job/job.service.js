@@ -1,6 +1,11 @@
 const { JobModel } = require("../../models/job-model/job.model");
+const {
+  NotificationModel,
+} = require("../../models/job-model/job.notification.model");
 const { getPropertyQuery } = require("../../sql_queries/sqlQuery");
 const { executeQuery, getData } = require("../../util/dao");
+const io = require("socket.io-client");
+const socket = io("http://localhost:4000"); // Adjust the URL to your Socket.io server
 
 // create comment by blog
 const createJobService = async (req, payload) => {
@@ -94,9 +99,21 @@ const getJobAllJobTitle = async (req, res) => {
   return result;
 };
 
+const createNotification = async (io, payload) => {
+  // Save to the database
+  const response = await NotificationModel.create(payload);
+  if (response) {
+    // Emit the notification event
+    io.emit("receiveNotification", payload);
+    console.log("Notification emitted:", payload);
+    return response;
+  }
+  return false;
+};
 module.exports = {
   createJobService,
   getJobListsService,
   getSingleJobService,
   getJobAllJobTitle,
+  createNotification,
 };

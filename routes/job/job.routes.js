@@ -7,6 +7,7 @@ const {
   getJobListsController,
   getSingleJobController,
   getJobAllJobTitleController,
+  createNotificationController,
 } = require("../../controllers/job/job.controller");
 const jobSchema = require("../../schema/job/jobCreateSchema");
 const verifyToken = require("../../middlewares/verifyToken");
@@ -23,5 +24,6 @@ jobRouter.post(
 jobRouter.get(API.API_CONTEXT + "job/get", getJobListsController);
 jobRouter.get(API.API_CONTEXT + `job/get/:id`, getSingleJobController);
 jobRouter.get(API.API_CONTEXT + `job/get-title`, getJobAllJobTitleController);
+jobRouter.post(API.API_CONTEXT + `job/notification`, createNotificationController);
 
 module.exports = jobRouter;
