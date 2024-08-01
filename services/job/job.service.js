@@ -1,3 +1,4 @@
+const notification = require("../../helpers/socketIo.helper");
 const { JobModel } = require("../../models/job-model/job.model");
 const {
   NotificationModel,
@@ -103,11 +104,11 @@ const createNotification = async (io, payload) => {
   // Save to the database
   const response = await NotificationModel.create(payload);
   if (response) {
-    // Emit the notification event
-    io.emit("receiveNotification", payload);
-    console.log("Notification emitted:", payload);
+    //Emit notification
+    notification.sendNotification("abcmehedi5@gmail.com", payload);
     return response;
   }
+  // send notification
   return false;
 };
 module.exports = {

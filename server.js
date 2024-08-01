@@ -7,9 +7,8 @@ const cors = require("cors");
 const morgan = require("morgan");
 const chalk = require("chalk");
 const mongoose = require("mongoose");
-const { createServer } = require("http");
-const socketIo = require("socket.io");
-
+const router = require("./routes/router");
+const { initSocketIo, io } = require("./util/socket");
 const {
   getEndpoints,
   getSpaceForPrintingPath,
@@ -18,23 +17,7 @@ const {
 const { getConnectionPool } = require("./util/db");
 
 const app = express();
-const server = createServer(app); // Create an HTTP server
-const io = socketIo(server, {
-  cors: {
-    origin: ["http://localhost:3000", "http://195.35.9.33:8000"],
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
-
-// Socket.io connection handling
-io.on("connection", (socket) => {
-  console.log(chalk.green("New client connected:", socket.id));
-
-  socket.on("disconnect", () => {
-    console.log(chalk.red("Client disconnected:", socket.id));
-  });
-});
+const server = initSocketIo(app);
 
 // MongoDB configuration
 const mongoURI = process.env.MONGODB_URI;
@@ -71,7 +54,6 @@ app.use(
   })
 );
 
-const router = require("./routes/router");
 app.use((req, _, next) => {
   req.pool = pool;
   req.io = io; // Make the io instance accessible in the request object
