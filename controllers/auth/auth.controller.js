@@ -5,6 +5,7 @@ const {
   setForgotPasswordService,
   refreshAccessTokenService,
   getSingleUserService,
+  getAllUserService,
 } = require("../../services/auth/auth.service");
 const { MESSAGE } = require("../../util/constant");
 
@@ -82,7 +83,9 @@ const refreshAccessTokenController = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(500).send({ message: error?.message || "access token not created" });
+    return res
+      .status(500)
+      .send({ message: error?.message || "access token not created" });
   }
 };
 
@@ -144,6 +147,46 @@ const getSingleUserController = async (req, res) => {
   }
 };
 
+// get all users
+const getAllUsersController = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const sortField = req?.query?.sortField || "createdAt";
+    const search = req?.query?.search;
+    const sortOrder = req?.query?.sortOrder || "desc";
+
+    // filters
+    const filters = {};
+    // if (status) {
+    //   filters.status = status;
+    // }
+    const result = await getAllUserService(
+      limit,
+      skip,
+      search,
+      filters,
+      sortField,
+      sortOrder
+    );
+    if (result.isSuccess) {
+      res.status(200).json({
+        message: result?.message,
+        status: 200,
+        isSuccess: result?.isSuccess,
+        totalItems: result?.totalItems,
+        totalCurrentItems: result?.data?.length,
+        data: result?.data,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+      isSuccess: false,
+    });
+  }
+};
 module.exports = {
   registerController,
   loginController,
@@ -151,4 +194,5 @@ module.exports = {
   forgotPasswordController,
   setForgotPasswordController,
   getSingleUserController,
+  getAllUsersController,
 };

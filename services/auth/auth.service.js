@@ -94,7 +94,7 @@ const loginService = async (email, password) => {
 // refresh access token
 const refreshAccessTokenService = async (req, res) => {
   const oldRefreshToken = req.cookies.refreshToken;
-  console.log({oldRefreshToken, cookie})
+  console.log({ oldRefreshToken, cookie });
   // vrify old refresh token
   const { fullName, email } = await verifyJWT(
     oldRefreshToken,
@@ -193,6 +193,62 @@ const getSingleUserService = async (email) => {
   }
 };
 
+// get all users
+const getAllUserService = async (
+  limit,
+  skip,
+  search,
+  filters,
+  sortField = "createdAt",
+  sortOrder = "desc"
+) => {
+  try {
+    let query = {};
+    if (search) {
+      query.$or = [{ title: { $regex: search, $options: "i" } }];
+    }
+    // apply filters if they are provided
+    if (filters) {
+      if (filters.experienceLevel) {
+        query.experienceLevel = filters.experienceLevel;
+      }
+      if (filters.employmentType) {
+        query.employmentType = filters.employmentType;
+      }
+      if (filters.jobType) {
+        query.jobType = filters.jobType;
+      }
+    }
+
+    // Determine sort order
+    const sort = {};
+    sort[sortField] = sortOrder?.toLowerCase() === "asc" ? 1 : -1;
+    const totalItems = await AuthModel.countDocuments(filters);
+    const res = await AuthModel.aggregate([
+      { $match: query },
+      { $sort: sort },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }],
+          // totalCount: [{ $count: "value" }],
+        },
+      },
+    ]);
+    if (res) {
+      return {
+        data: res[0].data,
+        totalItems,
+        isSuccess: true,
+        message: "Users retrieved successfully",
+      };
+    }
+  } catch (error) {
+    return {
+      isSuccess: false,
+      message: error.message,
+    };
+  }
+};
 module.exports = {
   registerService,
   loginService,
@@ -200,4 +256,5 @@ module.exports = {
   forgotPasswordService,
   setForgotPasswordService,
   getSingleUserService,
+  getAllUserService,
 };
