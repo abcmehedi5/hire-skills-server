@@ -3,6 +3,7 @@ const { createServer } = require("http");
 
 let io;
 const userSocketMap = new Map();
+const onlineUsers = new Set();
 
 const initSocketIo = (app) => {
   const server = createServer(app);
@@ -17,9 +18,11 @@ const initSocketIo = (app) => {
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
-    socket.on("register", async (email) => {
+    socket.on("register", (email) => {
       if (email) {
         userSocketMap.set(email, socket.id);
+        onlineUsers.add(email);
+        io.emit("online_users", Array.from(onlineUsers));
       } else {
         console.log("Email is null or undefined");
       }
@@ -27,11 +30,15 @@ const initSocketIo = (app) => {
 
     socket.on("send_private_message", ({ recipientEmail, message }) => {
       const userSocketId = userSocketMap.get(recipientEmail);
-      
+
       if (userSocketId) {
         io.to(userSocketId).emit("received_private_message", {
           sender: socket.id,
           message,
+        });
+        io.to(userSocketId).emit("notification", {
+          sender: socket.id,
+          message: "New message received",
         });
         console.log(`Message sent to socket ID: ${userSocketId}`);
       } else {
@@ -44,6 +51,8 @@ const initSocketIo = (app) => {
       userSocketMap.forEach((value, key) => {
         if (value === socket.id) {
           userSocketMap.delete(key);
+          onlineUsers.delete(key);
+          io.emit("online_users", Array.from(onlineUsers));
           console.log(`Removed user with email: ${key}`);
         }
       });
