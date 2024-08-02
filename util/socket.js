@@ -1,5 +1,6 @@
 const { Server: SocketIOServer } = require("socket.io");
 const { createServer } = require("http");
+const { MessageModel } = require("../models/message/message.model");
 
 let io;
 const userSocketMap = new Map();
@@ -28,23 +29,39 @@ const initSocketIo = (app) => {
       }
     });
 
-    socket.on("send_private_message", ({ recipientEmail, message }) => {
-      const userSocketId = userSocketMap.get(recipientEmail);
+    socket.on(
+      "send_private_message",
+      async ({ recipientEmail, message, senderEmail }) => {
+        const userSocketId = userSocketMap.get(recipientEmail);
 
-      if (userSocketId) {
-        io.to(userSocketId).emit("received_private_message", {
-          sender: socket.id,
-          message,
-        });
-        io.to(userSocketId).emit("notification", {
-          sender: socket.id,
-          message: "New message received",
-        });
-        console.log(`Message sent to socket ID: ${userSocketId}`);
-      } else {
-        console.log(`User with email ${recipientEmail} not found`);
+        if (userSocketId) {
+          io.to(userSocketId).emit("received_private_message", {
+            sender: senderEmail,
+            message,
+          });
+
+          // Find and load messages for the recipient and sender
+          const messages = await MessageModel.find({
+            $or: [
+              { email: senderEmail, recipient: recipientEmail },
+              { email: recipientEmail, recipient: senderEmail },
+            ],
+          }).sort({ createdAt: 1 });
+
+          // Emit the loaded messages to the sender and recipient
+          io.to(socket.id).emit("load_messages", messages);
+          io.to(userSocketId).emit("load_messages", messages);
+
+          io.to(userSocketId).emit("notification", {
+            sender: senderEmail,
+            message: "New message received",
+          });
+          console.log(`Message sent to socket ID: ${userSocketId}`);
+        } else {
+          console.log(`User with email ${recipientEmail} not found`);
+        }
       }
-    });
+    );
 
     socket.on("disconnect", () => {
       console.log("A user disconnected:", socket.id);

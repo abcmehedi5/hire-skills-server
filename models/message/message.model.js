@@ -14,6 +14,10 @@ const messageSchema = new Schema(
       type: String,
       required: true,
     },
+    recipient: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
