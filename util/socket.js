@@ -29,6 +29,17 @@ const initSocketIo = (app) => {
       }
     });
 
+    socket.on("load_messages", async ({ senderEmail, recipientEmail }) => {
+      const messages = await MessageModel.find({
+        $or: [
+          { email: senderEmail, recipient: recipientEmail },
+          { email: recipientEmail, recipient: senderEmail },
+        ],
+      }).sort({ createdAt: 1 });
+
+      socket.emit("load_messages", messages);
+    });
+
     socket.on(
       "send_private_message",
       async ({ recipientEmail, message, senderEmail }) => {
@@ -40,17 +51,13 @@ const initSocketIo = (app) => {
             message,
           });
 
-          // Find and load messages for the recipient and sender
-          const messages = await MessageModel.find({
-            $or: [
-              { email: senderEmail, recipient: recipientEmail },
-              { email: recipientEmail, recipient: senderEmail },
-            ],
-          }).sort({ createdAt: 1 });
-
-          // Emit the loaded messages to the sender and recipient
-          io.to(socket.id).emit("load_messages", messages);
-          io.to(userSocketId).emit("load_messages", messages);
+          // Save the message to the database
+          const newMessage = new MessageModel({
+            email: senderEmail,
+            recipient: recipientEmail,
+            message,
+          });
+          await newMessage.save();
 
           io.to(userSocketId).emit("notification", {
             sender: senderEmail,
