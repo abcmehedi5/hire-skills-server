@@ -11,7 +11,7 @@ const initSocketIo = (app) => {
 
   io = new SocketIOServer(server, {
     cors: {
-      origin: ["http://localhost:3000", "https://deverp.ccbd.dev"],
+      origin: ["http://localhost:3000", "http://195.35.9.33:8000"],
       methods: ["GET", "POST"],
     },
   });
