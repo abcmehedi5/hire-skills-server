@@ -9,6 +9,7 @@ const {
   refreshAccessTokenController,
   getSingleUserController,
   getAllUsersController,
+  getTokenUserController,
 } = require("../../controllers/auth/auth.controller");
 const registerSchema = require("../../schema/auth/registerSchema");
 const authRouter = express.Router();
@@ -33,6 +34,10 @@ authRouter.patch(
 authRouter.get(
   API.API_CONTEXT + "auth/get-single-user/:email",
   getSingleUserController
+);
+authRouter.get(
+  API.API_CONTEXT + "auth/get-token-user/:token",
+  getTokenUserController
 );
 authRouter.get(
   API.API_CONTEXT + "auth/get-users",

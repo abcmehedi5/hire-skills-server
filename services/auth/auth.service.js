@@ -249,6 +249,21 @@ const getAllUserService = async (
     };
   }
 };
+
+const getTokenUserService = async (token) => {
+  const decodedToken = await verifyJWT(token);
+  try {
+    const response = AuthModel.findOne({ email: decodedToken.email });
+    return response;
+  } catch (error) {
+    return {
+      message:
+        error?.message || "An error occurred while resetting the password",
+      error: true,
+    };
+  }
+};
+
 module.exports = {
   registerService,
   loginService,
@@ -257,4 +272,5 @@ module.exports = {
   setForgotPasswordService,
   getSingleUserService,
   getAllUserService,
+  getTokenUserService,
 };

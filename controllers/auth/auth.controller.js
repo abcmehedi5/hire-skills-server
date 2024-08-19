@@ -6,6 +6,7 @@ const {
   refreshAccessTokenService,
   getSingleUserService,
   getAllUserService,
+  getTokenUserService,
 } = require("../../services/auth/auth.service");
 const { MESSAGE } = require("../../util/constant");
 
@@ -187,6 +188,26 @@ const getAllUsersController = async (req, res) => {
     });
   }
 };
+
+// single user controller
+const getTokenUserController = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const result = await getTokenUserService(token);
+    if (result) {
+      return res
+        .status(200)
+        .json({ response: result, message: result.message });
+    } else {
+      return res.status(500).json({ message: result.message });
+    }
+  } catch (error) {
+    return res.status(500).send({
+      message:
+        error?.message || "There was a server side error please try again",
+    });
+  }
+};
 module.exports = {
   registerController,
   loginController,
@@ -195,4 +216,5 @@ module.exports = {
   setForgotPasswordController,
   getSingleUserController,
   getAllUsersController,
+  getTokenUserController,
 };
